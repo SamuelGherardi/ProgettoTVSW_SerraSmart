@@ -1,7 +1,7 @@
-//Nome asm
+// Nome asm
 asm SerraSmart
 
-//Importazione delle librerie necessarie (librerie standard ASMETA + logiche CTL e LTL per model checking)
+// Importazione delle librerie necessarie (librerie standard ASMETA + logiche CTL e LTL per model checking)
 import ../STDL/StandardLibrary
 import ../STDL/CTLLibrary
 import ../STDL/LTLLibrary
@@ -43,16 +43,41 @@ static sogliaTempMax : Integer
 static sogliaUmiditaMin : Integer
 static sogliaUmiditaMax : Integer
 static sogliaLuceMin : Integer
+static sogliaLuceMax : Integer
 
 // ===============================
 // FUNZIONI DERIVATE
 // ===============================
+
+// Controllo delle soglie della temperatura
+derived temperaturaTroppoBassa : Boolean
 derived temperaturaTroppoAlta : Boolean
 
+// Controllo soglie umidità
+derived umiditaTroppoBassa : Boolean
+derived umiditaTroppoAlta : Boolean
+
+// Controllo soglie luce
+derived luceTroppoBassa : Boolean
+derived luceTroppoAlta : Boolean
+
+definitions:
+// ===============================
+// DEFINIZIONE FUNZIONI DERIVATE
+// ===============================
+
+// Controllo soglie temperatura
+function temperaturaTroppoBassa = if(temperatura < sogliaTempMin) then true else false endif
+function temperaturaTroppoAlta = if(temperatura > sogliaTempMax) then true else false endif
 
 
+// Controllo soglie umidità
+function umiditaTroppoBassa = if(umidita < sogliaUmiditaMin) then true else false endif
+function umiditaTroppoAlta = if(umidita > sogliaUmiditaMax) then true else false endif
 
-
+// Controllo soglie luce
+function luceTroppoBassa = if(luce < sogliaLuceMin) then true else false endif
+function luceTroppoAlta = if(luce > sogliaLuceMax) then true else false endif
 
 
 
