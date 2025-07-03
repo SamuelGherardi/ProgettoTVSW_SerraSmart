@@ -28,7 +28,10 @@ signature:
 	controlled statoLuce: Luci -> StatoLuce
 	controlled statoIrrigatore: Irrigatori -> LivelloIrrigatore
 	controlled statoVentilatore: Ventilatori -> StatoVentilatore
-
+	controlled luminositaAttuale : Integer
+	controlled temperaturaAttuale : Integer
+	
+	
 	monitored elemento: Elementi
 	monitored azioneSerra: AzioniSerra
 	monitored azioneLuci: AzioniLuci
@@ -82,6 +85,12 @@ definitions:
 		forall $l in Luci with statoLuce($l) = ON
 		do
 			statoLuce($l) := OFF
+	
+	// Regola che va ad accendere tutti i ventilatori nel momento in cui la temperatura segnalata è maggiore della soglia massima
+	rule r_ventilatoriAccesi($azione in AzioniVentilatori) = 
+		forall $v in Ventilatori with statoVentilatore($v) = SPENTO
+		do
+			statoVentilatore($v) := ACCESO
 			
 							
 
@@ -90,8 +99,9 @@ definitions:
 	main rule r_Main =
 	par	// Si simula in modo casuale il livello di luminosità presente nella serra
 		choose $x in Luminosita with true
-		do 	
+		do
 			par
+			luminositaAttuale:=$x
 			if ($x < sogliaLuceMin)// Se la luminosità risulta sotto la soglia minima si vanno ad accedendere tutte le luci
 			then r_luciAccese[azioneLuci]
 			endif
@@ -102,10 +112,17 @@ definitions:
 		
 		// Si simula in modo casuale il livello di temperatura presente nella serra
 		choose $t in Temperatura with true
-		do 	if ($t < sogliaTempMin)// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
+		do
+			
+			par
+			temperaturaAttuale:=$t
+			if ($t < sogliaTempMin)// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
 			then r_luciAccese[azioneLuci]
-			endif	
-		
+			endif
+			if ($t > sogliaTempMax)// Se la temperatura risulta sopra la soglia massima si vanno ad accedendere tutti i ventilatori
+			then r_ventilatoriAccesi[azioneVentilatori]	
+			endif
+			endpar
 	endpar				 
 	
 
