@@ -43,6 +43,7 @@ signature:
 	monitored sogliaUmiditaMin : Integer
 	monitored sogliaUmiditaMax : Integer
 	monitored sogliaLuceMin : Integer
+	monitored sogliaLuceMax : Integer
 
 	derived serraChiusa: Boolean //True se la serra ha luci spente, irrigatori spenti e ventilatori spenti
 	
@@ -75,6 +76,12 @@ definitions:
 		forall $l in Luci with statoLuce($l) = OFF
 		do
 			statoLuce($l) := ON
+	
+	// Regola che va ad spegnere tutte le luci nel momento in cui la luminosità segnalata è maggiore della soglia massima
+	rule r_luciSpente($azione in AzioniLuci) = 
+		forall $l in Luci with statoLuce($l) = ON
+		do
+			statoLuce($l) := OFF
 			
 							
 
@@ -83,13 +90,19 @@ definitions:
 	main rule r_Main =
 	par	// Si simula in modo casuale il livello di luminosità presente nella serra
 		choose $x in Luminosita with true
-		do 	if ($x < sogliaLuceMin)
+		do 	
+			par
+			if ($x < sogliaLuceMin)// Se la luminosità risulta sotto la soglia minima si vanno ad accedendere tutte le luci
 			then r_luciAccese[azioneLuci]
 			endif
+			if ($x > sogliaLuceMax)// Se la luminosità risulta sopra la soglia massima si vanno ad spegnere tutte le luci
+			then r_luciSpente[azioneLuci]
+			endif
+			endpar
 		
-		// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
+		// Si simula in modo casuale il livello di temperatura presente nella serra
 		choose $t in Temperatura with true
-		do 	if ($t < sogliaTempMin)
+		do 	if ($t < sogliaTempMin)// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
 			then r_luciAccese[azioneLuci]
 			endif	
 		
