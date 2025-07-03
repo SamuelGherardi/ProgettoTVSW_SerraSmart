@@ -30,7 +30,7 @@ signature:
 	controlled statoVentilatore: Ventilatori -> StatoVentilatore
 	controlled luminositaAttuale : Integer
 	controlled temperaturaAttuale : Integer
-	
+	controlled umiditaAttuale : Integer
 	
 	monitored elemento: Elementi
 	monitored azioneSerra: AzioniSerra
@@ -91,7 +91,24 @@ definitions:
 		forall $v in Ventilatori with statoVentilatore($v) = SPENTO
 		do
 			statoVentilatore($v) := ACCESO
-			
+	
+	// Regola che va a spegnere tutti i ventilatori nel momento in cui la temperatura segnalata è sotto la soglia minima
+	rule r_ventilatoriSpenti($azione in AzioniVentilatori) = 
+		forall $v in Ventilatori with statoVentilatore($v) = ACCESO
+		do
+			statoVentilatore($v) := SPENTO
+	
+	// Regola che va ad accendere tutti gli irrigatori nel momento in cui l'umidità segnalata è sotto la soglia minima
+	rule r_irrigatoriAccesi($azione in AzioniIrrigatori) = 
+		forall $i in Irrigatori with statoIrrigatore($i) !=100
+		do
+			statoIrrigatore($i) := 100
+	
+	// Regola che va a spegnere tutti gli irrigatori nel momento in cui l'umidità segnalata è sopra la soglia massima
+	rule r_irrigatoriSpenti($azione in AzioniIrrigatori) = 
+		forall $i in Irrigatori with statoIrrigatore($i) !=0
+		do
+			statoIrrigatore($i) := 0
 							
 
 	
@@ -116,13 +133,30 @@ definitions:
 			
 			par
 			temperaturaAttuale:=$t
-			if ($t < sogliaTempMin)// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
-			then r_luciAccese[azioneLuci]
+			if ($t < sogliaTempMin)// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci e spegnere eventuali ventilatori accesi
+			then
+				par
+				r_luciAccese[azioneLuci]
+				r_ventilatoriSpenti[azioneVentilatori]
+				endpar
 			endif
 			if ($t > sogliaTempMax)// Se la temperatura risulta sopra la soglia massima si vanno ad accedendere tutti i ventilatori
 			then r_ventilatoriAccesi[azioneVentilatori]	
 			endif
 			endpar
+			
+		choose $u in Umidita with true
+		do
+			par
+			umiditaAttuale:=$u
+			if ($u < sogliaUmiditaMin)// Se l'umidità risulta sotto la soglia minima si vanno ad accedendere gli irrigatori al massimo
+			then r_irrigatoriAccesi[azioneIrrigatori]
+			endif
+			if ($u > sogliaUmiditaMax)// Se l'umidità risulta sopra la soglia massima si vanno a spegnere tutti gli irrigatori
+			then r_irrigatoriSpenti[azioneIrrigatori]
+			endif
+			endpar
+		
 	endpar				 
 	
 
