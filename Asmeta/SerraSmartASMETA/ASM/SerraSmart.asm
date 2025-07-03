@@ -74,17 +74,26 @@ definitions:
 	rule r_luciAccese($azione in AzioniLuci) = 
 		forall $l in Luci with statoLuce($l) = OFF
 		do
-			statoLuce($l) := ON						
+			statoLuce($l) := ON
+			
+							
 
 	
 	// REGOLA PRINCIPALE
 	main rule r_Main =
-		// Si simula in modo casuale il livello di luminosità presente nella serra
+	par	// Si simula in modo casuale il livello di luminosità presente nella serra
 		choose $x in Luminosita with true
 		do 	if ($x < sogliaLuceMin)
 			then r_luciAccese[azioneLuci]
-			endif				
-	
+			endif
+		
+		// Se la temperatura risulta sotto la soglia minima si vanno ad accedendere tutte le luci
+		choose $t in Temperatura with true
+		do 	if ($t < sogliaTempMin)
+			then r_luciAccese[azioneLuci]
+			endif	
+		
+	endpar				 
 	
 
 
@@ -93,6 +102,11 @@ definitions:
 default init s0:
 	// Luci spente
 	function statoLuce($l in Luci) =  OFF
+	// Irrigatori spenti
+	function statoIrrigatore($i in Irrigatori) =  0
+	// Ventilatori spenti
+	function statoVentilatore($v in Ventilatori) =  SPENTO
+	
 
 
 
