@@ -16,6 +16,7 @@ signature:
 	enum domain Ventilatori = {PRINCIPALE | SECONDARIO}
 	enum domain StatoVentilatore = {ACCESO | SPENTO}
 	enum domain StatoLuce = {ON | OFF}
+	enum domain ModalitaControllo = {MANUALE | AUTOMATICA}
 	
 	// Domini per le funzioni monitorate (input dall'environment)
 	enum domain Elementi = {SERRA | LUCI | IRRIGATORI | VENTILATORI /* | ANTIFURTO*/}
@@ -47,7 +48,8 @@ signature:
 	monitored sogliaUmiditaMax : Integer
 	monitored sogliaLuceMin : Integer
 	monitored sogliaLuceMax : Integer
-
+	monitored sceltaModalita : ModalitaControllo
+	
 	derived serraChiusa: Boolean //True se la serra ha luci spente, irrigatori spenti e ventilatori spenti
 	
 definitions:
@@ -73,6 +75,29 @@ definitions:
 				then statoLuce(luce) := OFF
 				endif
 		endif
+	
+	// Regola che va ad accendere oppure a spegnere un singolo ventilatore all'interno della serra
+	rule r_ventilatori($azione in AzioniVentilatori) = 
+		if ($azione = ACCENDI_VENTILATORE)	
+		then statoVentilatore(ventilatore) := ACCESO
+		else 	if ($azione = SPEGNI_VENTILATORE)
+				then statoVentilatore(ventilatore) := SPENTO
+				endif
+		endif
+		
+	// Regola che va ad accendere oppure a spegnere un singolo irrigatore all'interno della serra
+	rule r_irrigatori($azione in AzioniIrrigatori) =
+		par
+		if ($azione = IMPOSTA_IRRIGATORE)	
+		then statoIrrigatore(irrigatore) := livello_irrigatore
+		endif
+		if ($azione = APRI_IRRIGATORE)
+		then statoIrrigatore(irrigatore) := 100
+		endif
+		if ($azione = CHIUDI_IRRIGATORE)
+		then statoIrrigatore(irrigatore) := 0
+		endif
+		endpar
 	
 	// Regola che va ad accendere tutte le luci nel momento in cui la luminosità segnalata è minore della soglia minima
 	rule r_luciAccese($azione in AzioniLuci) = 
@@ -114,6 +139,9 @@ definitions:
 	
 	// REGOLA PRINCIPALE
 	main rule r_Main =
+	par
+	
+	if(sceltaModalita = AUTOMATICA) then // Se la scelta è il controllo automatico della serra
 	par	// Si simula in modo casuale il livello di luminosità presente nella serra
 		choose $x in Luminosita with true
 		do
@@ -158,7 +186,35 @@ definitions:
 			endpar
 		
 	endpar				 
+	endif
 	
+	if(sceltaModalita = MANUALE)then // Se la scelta è il controllo manuale della serra
+		par
+		choose $z in Luminosita with true // Si imposta una delle luci
+		do
+			par
+			luminositaAttuale:=$z
+			r_luci[azioneLuci]
+			endpar
+		choose $w in Temperatura with true // Si imposta uno dei ventilatori
+		do
+			par
+			temperaturaAttuale:=$w
+			r_ventilatori[azioneVentilatori]
+			endpar
+			
+		choose $m in Umidita with true // Si imposta uno degli irrigatori
+		do
+			par
+			umiditaAttuale:=$m
+			r_irrigatori[azioneIrrigatori]
+			endpar
+		endpar
+	
+	endif
+	
+	
+	endpar
 
 
 
