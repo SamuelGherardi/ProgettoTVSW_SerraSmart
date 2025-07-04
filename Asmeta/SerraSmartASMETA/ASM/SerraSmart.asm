@@ -52,6 +52,7 @@ signature:
 	
 	derived serraChiusa: Boolean //True se la serra ha luci spente, irrigatori spenti e ventilatori spenti
 	
+	
 definitions:
 	// DEFINIZIONE DOMINI
 	domain Luci = {1 : 5}
@@ -65,6 +66,7 @@ definitions:
 	function serraChiusa = 	(forall $l in Luci with statoLuce($l) = OFF) and
 							(forall $i in Irrigatori with statoIrrigatore($i) = 0) and
 							(forall $v in Ventilatori with statoVentilatore($v) = SPENTO)
+	
 	
 	// DEFINIZIONE DELLE REGOLE
 	// Regola che va ad accendere oppure a spegnere una singola luce della serra
@@ -135,6 +137,30 @@ definitions:
 		do
 			statoIrrigatore($i) := 0
 							
+	
+	
+	// PROPRIETA'
+	//CTL 1 – Liveness: se la temperatura supera la soglia, prima o poi si attiva uno dei due ventilatori
+	CTLSPEC ag ((temperaturaAttuale > sogliaTempMax) implies af (statoVentilatore(PRINCIPALE) = ACCESO or statoVentilatore(SECONDARIO) = ACCESO ))
+	
+	//CTL 2 – Safety: non devono essere accesi contemporaneamente tutti gli attuatori in qualsiasi momento
+	CTLSPEC not ag(
+    (exist $l in Luci with statoLuce($l) = ON) and
+    (exist $i in Irrigatori with statoIrrigatore($i) > 0) and
+    (exist $v in Ventilatori with statoVentilatore($v) = ACCESO))
+    
+    //LTL 1 – Until: le luci rimangono accese fino a quando la luce non supera la soglia
+	LTLSPEC g ((luminositaAttuale < sogliaLuceMin) implies u(statoLuce(1) = ON, luminositaAttuale > sogliaLuceMin))
+	
+	//LTL 2 – Globale: se la serra è chiusa, nessun attuatore deve essere attivo
+	LTLSPEC g (
+    serraChiusa implies
+    (forall $l in Luci with statoLuce($l) = OFF) and
+    (forall $i in Irrigatori with statoIrrigatore($i) = 0) and
+    (forall $v in Ventilatori with statoVentilatore($v) = SPENTO)
+    )
+	
+
 
 	
 	// REGOLA PRINCIPALE
