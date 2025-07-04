@@ -1,0 +1,94 @@
+// Nome scenario
+scenario Scenario1
+// ASM di riferimento
+load SerraSmart.asm
+
+//In questo scenario valuto la gestione automatica della serra
+
+//Controllo che inizialmente tutti gli attuatori siano spenti
+check statoLuce(1) = OFF;
+check statoLuce(2) = OFF;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = SPENTO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+
+// Setto la modalità in automatico
+set sceltaModalita := AUTOMATICA;
+
+
+// Imposto le soglie per i valori di luminosità
+set sogliaLuceMin := 10;
+set sogliaLuceMax := 50;
+
+// Imposto le soglie per i valori di temperatura
+set sogliaTempMin := 5;
+set sogliaTempMax := 30;
+
+
+// Imposto le soglie per i valori di umidità
+set sogliaUmiditaMin := 10;
+set sogliaUmiditaMax := 50;
+
+
+// Forzo i valori rilevati sulla luminosità, sulla temperatura e sull'umidità
+pick $x := 8; //luminosità  ==> mi aspetto che si accendano tutte le luci
+pick $t := 40; //temperatura ==> mi aspetto che si accendano entrambi i ventilatori
+pick $u := 9; //umidità ==> mi aspetti che si attivino al massimo tutti gli irrigatori
+
+step
+
+// Controllo che effettivamente tutti gli attuatori si siano attivati
+check statoLuce(1) = ON;
+check statoLuce(2) = ON;
+check statoLuce(3) = ON;
+check statoLuce(4) = ON;
+check statoLuce(5) = ON;
+check statoVentilatore(PRINCIPALE) = ACCESO;
+check statoVentilatore(SECONDARIO) = ACCESO;
+check statoIrrigatore(1) = 100;
+check statoIrrigatore(2) = 100;
+check statoIrrigatore(3) = 100;
+
+// Forzo i valori rilevati sulla luminosità, sulla temperatura e sull'umidità
+pick $x := 60; //luminosità  ==> mi aspetto che si spengano tutte le luci
+pick $t := 40; //temperatura ==> mi aspetto che i ventilatori restino accesi
+pick $u := 65; //umidità ==> mi aspetti che si spengano tutti gli irrigatori
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = OFF;
+check statoLuce(2) = OFF;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = ACCESO;
+check statoVentilatore(SECONDARIO) = ACCESO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+
+// Forzo i valori rilevati sulla luminosità, sulla temperatura e sull'umidità
+pick $x := 60; //luminosità  ==> mi aspetto che le luci restino spente
+pick $t := 3; //temperatura ==> mi aspetto che i ventilatori si spengano, e che le luci si accendano
+pick $u := 65; //umidità ==> mi aspetti che tutti gli irrigatori restino spenti
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = ON;
+check statoLuce(2) = ON;
+check statoLuce(3) = ON;
+check statoLuce(4) = ON;
+check statoLuce(5) = ON;
+check statoVentilatore(PRINCIPALE) = SPENTO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+

@@ -1,0 +1,127 @@
+// Nome scenario
+scenario Scenario2
+// ASM di riferimento
+load SerraSmart.asm
+
+//In questo scenario valuto la gestione manuale della serra
+
+//Controllo che inizialmente tutti gli attuatori siano spenti
+check statoLuce(1) = OFF;
+check statoLuce(2) = OFF;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = SPENTO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+
+// Setto la modalità in automatico
+set sceltaModalita := MANUALE;
+
+// Specifico di voler accendere la luce numero 1
+set azioneLuci := ACCENDI_LUCE;
+set luce := 1;
+
+// Specifico di voler accendere il ventilatore principale
+set azioneVentilatori := ACCENDI_VENTILATORE;
+set ventilatore := PRINCIPALE;
+
+// Specifico di voler accendere al massimo l'irrigatore numero 1
+set azioneIrrigatori := APRI_IRRIGATORE;
+set irrigatore := 1;
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = ON;
+check statoLuce(2) = OFF;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = ACCESO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 100;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+
+// Specifico di voler accendere la luce numero 2
+set azioneLuci := ACCENDI_LUCE;
+set luce := 2;
+
+// Specifico di voler accendere il ventilatore secondario
+set azioneVentilatori := ACCENDI_VENTILATORE;
+set ventilatore := SECONDARIO;
+
+// Specifico di voler spegnere l'irrigatore numero 1
+set azioneIrrigatori := CHIUDI_IRRIGATORE;
+set irrigatore := 1;
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = ON;
+check statoLuce(2) = ON;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = ACCESO;
+check statoVentilatore(SECONDARIO) = ACCESO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 0;
+
+// Specifico di voler spegnere la luce numero 1
+set azioneLuci := SPEGNI_LUCE;
+set luce := 1;
+
+// Specifico di voler spegnere il ventilatore secondario
+set azioneVentilatori := SPEGNI_VENTILATORE;
+set ventilatore := SECONDARIO;
+
+// Specifico di voler accendere al massimo l'irrigatore numero 3
+set azioneIrrigatori := APRI_IRRIGATORE;
+set irrigatore := 3;
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = OFF;
+check statoLuce(2) = ON;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = ACCESO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 0;
+check statoIrrigatore(3) = 100;
+
+// Specifico di voler spegnere la luce numero 2
+set azioneLuci := SPEGNI_LUCE;
+set luce := 2;
+
+// Specifico di voler spegnere il ventilatore principale
+set azioneVentilatori := SPEGNI_VENTILATORE;
+set ventilatore := PRINCIPALE;
+
+// Specifico di voler impostare al 50% l'irrigatore numero 2
+set azioneIrrigatori := IMPOSTA_IRRIGATORE;
+set livello_irrigatore := 50;
+set irrigatore := 2;
+
+step
+
+// Controllo che effettivamente tutti gli attuatori cambino stato nel modo corretto
+check statoLuce(1) = OFF;
+check statoLuce(2) = OFF;
+check statoLuce(3) = OFF;
+check statoLuce(4) = OFF;
+check statoLuce(5) = OFF;
+check statoVentilatore(PRINCIPALE) = SPENTO;
+check statoVentilatore(SECONDARIO) = SPENTO;
+check statoIrrigatore(1) = 0;
+check statoIrrigatore(2) = 50;
+check statoIrrigatore(3) = 100;
+
