@@ -1,0 +1,23 @@
+
+scenario TestCase_ATGT_0
+
+initial state s0
+
+step 1
+    monitored sceltaModalita := AUTOMATICA
+    monitored sogliaTempMin := 18
+    monitored sogliaTempMax := 30
+    monitored sogliaUmiditaMin := 40
+    monitored sogliaUmiditaMax := 70
+    monitored sogliaLuceMin := 200
+    monitored sogliaLuceMax := 700
+
+step 2
+    choose $x := 150  // luminosità sotto soglia → luci accese
+    choose $t := 32   // temperatura sopra soglia → ventole accese
+    choose $u := 35   // umidità sotto soglia → irrigatori accesi
+
+step 3
+    choose $x := 800  // luminosità sopra soglia → luci spente
+    choose $t := 20   // temperatura normale → ventole spente
+    choose $u := 80   // umidità sopra soglia → irrigatori spenti
