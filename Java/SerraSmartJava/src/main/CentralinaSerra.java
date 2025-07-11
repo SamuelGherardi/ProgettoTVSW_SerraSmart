@@ -33,7 +33,7 @@ public class CentralinaSerra {
 		this.controller=controller;
 	}
 	
-	//Metodo che permette di definire la modalità di gestione della serra
+	//Metodo che permette di definire la modalit  di gestione della serra
 	public void setModalita(Modalita m) {
         this.modalita = m;
     }
@@ -82,32 +82,32 @@ public class CentralinaSerra {
 		}
     }
     
-    //Metodo che va ad aggiornare i valori di temperatura, umidità e luminosità all'interno della serra 
+    //Metodo che va ad aggiornare i valori di temperatura, umiditÃ   e luminositÃ   all'interno della serra 
     public void aggiornaSensori(int temperatura, int umidita, int lux) {
     	
     	if (modalita == Modalita.AUTOMATICA) {
-    		//Se la luce è insufficiente si accendono tutte le luci
+    		//Se la luce   insufficiente si accendono tutte le luci
             if(controller.luceInsufficiente(lux)) {
             	accendiLuci();
             }
-            //Se la luce è troppo alta si spengono tutte le luci
+            //Se la luce   troppo alta si spengono tutte le luci
             if(controller.luceTroppoAlta(lux)) {
             	spegniLuci();
             }
-            //Se la temperatura è troppo bassa allora si spengono tutti i ventilatori e si accendono tutte le luci
+            //Se la temperatura   troppo bassa allora si spengono tutti i ventilatori e si accendono tutte le luci
             if(controller.temperaturaTroppoBassa(temperatura)) {
             	spegniVentilatori();
             	accendiLuci();
             }
-            //Se la temperatura è troppo alta allora si accendono tutti i ventilatori della serra
+            //Se la temperatura   troppo alta allora si accendono tutti i ventilatori della serra
             if(controller.temperaturaTroppoAlta(temperatura)) {
             	accendiVentilatori();
             }
-            //Se l'umidità è troppo bassa si accendono al massimo tutti gli irrigatori
+            //Se l'umidit    troppo bassa si accendono al massimo tutti gli irrigatori
             if(controller.umiditaTroppoBassa(umidita)) {
             	accendiIrrigatori();
             }
-            //Se l'umidità è troppo alta si spengono tutti gli irrigatori
+            //Se l'umidit    troppo alta si spengono tutti gli irrigatori
             if(controller.umiditaTroppoAlta(umidita)) {
             	spegniIrrigatori();
             }
@@ -168,7 +168,7 @@ public class CentralinaSerra {
     //Metodo che restituisce il livello di un particolare irrigatore all'interno della serra
     public int getLivelloIrrigatore(int i) {
     	
-    	int si=-1; //se il numero dell'irrigatore non è presente, viene restituito un valore negativo
+    	int si=-1; //se il numero dell'irrigatore non   presente, viene restituito un valore negativo
     	
     	if(i>=0 && i<irrigatori.length) {
     		si=irrigatori[i];

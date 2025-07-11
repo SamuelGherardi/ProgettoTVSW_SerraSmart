@@ -1,0 +1,2728 @@
+<?xml version="1.0" encoding="UTF-8"?><TestSessionContainer xmlns="http://www.codecover.org/xml/testsession-container" Date="1752226459183" TestSessionContainerId="3c6ab8a4-2861-4491-b723-6d8479a7c60f" version="1.0">
+    <SrcFileList>
+        <SrcFile Content="package main;&#13;&#10;&#13;&#10;import java.util.HashMap;&#13;&#10;&#13;&#10;//Classe che gestisce gli attuatori, la logica e l'interfaccia con il controller&#13;&#10;public class CentralinaSerra {&#13;&#10;&#9;&#13;&#10;&#9;private StatoLuce[] luci;&#13;&#10;&#9;private HashMap&lt;Ventilatore, StatoVentilatore&gt; ventilatori;&#13;&#10;&#9;private int[] irrigatori;&#13;&#10;&#9;&#13;&#10;&#9;private Modalita modalita;&#13;&#10;&#9;private SerraSmartController controller;&#13;&#10;&#9;&#13;&#10;&#9;//Costruttore&#13;&#10;&#9;public CentralinaSerra(int n_luci, int n_irrigatori, SerraSmartController controller, Modalita modalita) {&#13;&#10;&#9;&#9;&#13;&#10;&#9;&#9;this.luci = new StatoLuce[n_luci];&#13;&#10;&#9;&#9;for(int i=0; i&lt;n_luci;i++) {&#13;&#10;&#9;&#9;&#9;luci[i]=StatoLuce.OFF; //Inizialmente tutte le luci all'interno della serra sono spente&#13;&#10;&#9;&#9;}&#13;&#10;&#9;&#9;&#13;&#10;&#9;&#9;this.irrigatori = new int[n_irrigatori];&#13;&#10;&#9;&#9;for(int i=0; i&lt;n_irrigatori; i++) {&#13;&#10;&#9;&#9;&#9;irrigatori[i]=0; //Inizialmente tutti gli irrigatori sono spenti&#13;&#10;&#9;&#9;}&#13;&#10;&#9;&#9;&#13;&#10;&#9;&#9;this.ventilatori = new HashMap&lt;Ventilatore, StatoVentilatore&gt;();&#13;&#10;&#9;&#9;this.ventilatori.put(Ventilatore.PRINCIPALE, StatoVentilatore.SPENTO); //Inizialmente entrambi i ventilatori sono spenti&#13;&#10;&#9;&#9;this.ventilatori.put(Ventilatore.SECONDARIO, StatoVentilatore.SPENTO);&#13;&#10;&#9;&#9;&#13;&#10;&#9;&#9;this.modalita=modalita;&#13;&#10;&#9;&#9;this.controller=controller;&#13;&#10;&#9;}&#13;&#10;&#9;&#13;&#10;&#9;//Metodo che permette di definire la modalit  di gestione della serra&#13;&#10;&#9;public void setModalita(Modalita m) {&#13;&#10;        this.modalita = m;&#13;&#10;    }&#13;&#10;&#9;&#13;&#10;    public Modalita getModalita() {&#13;&#10;        return modalita;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va ad accendere tutte le luci della serra&#13;&#10;    public void accendiLuci() {&#13;&#10;    &#9;for(int i=0; i&lt;luci.length;i++) {&#13;&#10;&#9;&#9;&#9;luci[i]=StatoLuce.ON;&#13;&#10;&#9;&#9;}&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va a spegnere tutte le luci della serra&#13;&#10;    public void spegniLuci() {&#13;&#10;    &#9;for(int i=0; i&lt;luci.length;i++) {&#13;&#10;&#9;&#9;&#9;luci[i]=StatoLuce.OFF; &#13;&#10;&#9;&#9;}&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va ad accendere tutti i ventilatori della serra&#13;&#10;    public void accendiVentilatori() {&#13;&#10;    &#9;ventilatori.replace(Ventilatore.PRINCIPALE, StatoVentilatore.SPENTO, StatoVentilatore.ACCESO);&#13;&#10;    &#9;ventilatori.replace(Ventilatore.SECONDARIO, StatoVentilatore.SPENTO, StatoVentilatore.ACCESO);&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va a spegnere tutti i ventilatori della serra&#13;&#10;    public void spegniVentilatori() {&#13;&#10;    &#9;ventilatori.replace(Ventilatore.PRINCIPALE, StatoVentilatore.ACCESO, StatoVentilatore.SPENTO);&#13;&#10;    &#9;ventilatori.replace(Ventilatore.SECONDARIO, StatoVentilatore.ACCESO, StatoVentilatore.SPENTO);&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va ad accendere al massimo tutti gli irrigatori della serra&#13;&#10;    public void accendiIrrigatori() {&#13;&#10;    &#9;for(int i=0; i&lt;irrigatori.length;i++) {&#13;&#10;&#9;&#9;&#9;irrigatori[i]=100;&#13;&#10;&#9;&#9;}&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va a spegnere tutti gli irrigatori della serra&#13;&#10;    public void spegniIrrigatori() {&#13;&#10;    &#9;for(int i=0; i&lt;irrigatori.length;i++) {&#13;&#10;&#9;&#9;&#9;irrigatori[i]=0;&#13;&#10;&#9;&#9;}&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che va ad aggiornare i valori di temperatura, umidità  e luminosità  all'interno della serra &#13;&#10;    public void aggiornaSensori(int temperatura, int umidita, int lux) {&#13;&#10;    &#9;&#13;&#10;    &#9;if (modalita == Modalita.AUTOMATICA) {&#13;&#10;    &#9;&#9;//Se la luce   insufficiente si accendono tutte le luci&#13;&#10;            if(controller.luceInsufficiente(lux)) {&#13;&#10;            &#9;accendiLuci();&#13;&#10;            }&#13;&#10;            //Se la luce   troppo alta si spengono tutte le luci&#13;&#10;            if(controller.luceTroppoAlta(lux)) {&#13;&#10;            &#9;spegniLuci();&#13;&#10;            }&#13;&#10;            //Se la temperatura   troppo bassa allora si spengono tutti i ventilatori e si accendono tutte le luci&#13;&#10;            if(controller.temperaturaTroppoBassa(temperatura)) {&#13;&#10;            &#9;spegniVentilatori();&#13;&#10;            &#9;accendiLuci();&#13;&#10;            }&#13;&#10;            //Se la temperatura   troppo alta allora si accendono tutti i ventilatori della serra&#13;&#10;            if(controller.temperaturaTroppoAlta(temperatura)) {&#13;&#10;            &#9;accendiVentilatori();&#13;&#10;            }&#13;&#10;            //Se l'umidit    troppo bassa si accendono al massimo tutti gli irrigatori&#13;&#10;            if(controller.umiditaTroppoBassa(umidita)) {&#13;&#10;            &#9;accendiIrrigatori();&#13;&#10;            }&#13;&#10;            //Se l'umidit    troppo alta si spengono tutti gli irrigatori&#13;&#10;            if(controller.umiditaTroppoAlta(umidita)) {&#13;&#10;            &#9;spegniIrrigatori();&#13;&#10;            }&#13;&#10;            &#13;&#10;        }&#13;&#10;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che permette di accendere oppure spegnere una luce manualmente&#13;&#10;    public void setLuce(int l, StatoLuce s) {&#13;&#10;    &#9;&#13;&#10;    &#9;if(modalita==Modalita.MANUALE) {&#13;&#10;    &#9;&#9;if(l&gt;=0 &amp;&amp; l&lt;luci.length) {&#13;&#10;    &#9;&#9;&#9;luci[l]=s;&#13;&#10;    &#9;&#9;}&#13;&#10;    &#9;}&#13;&#10;    &#9;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che permette di accendere oppure spegnere un ventilatore manualmente&#13;&#10;    public void setVentilatore(Ventilatore v, StatoVentilatore s) {&#13;&#10;    &#9;&#13;&#10;    &#9;if(modalita==Modalita.MANUALE) {&#13;&#10;    &#9;&#9;ventilatori.replace(v, s);&#13;&#10;    &#9;}&#13;&#10;    &#9;&#13;&#10;    }&#13;&#10;    &#13;&#10;    &#13;&#10;    //Metodo che permette di settare il livello di apertura di un particolare irrigatore all'interno della serra&#13;&#10;    public void setIrrigatore(int i, int livello) {&#13;&#10;    &#9;&#13;&#10;    &#9;if(modalita==Modalita.MANUALE) {&#13;&#10;    &#9;&#9;if(i&gt;=0 &amp;&amp; i&lt;irrigatori.length &amp;&amp; livello&gt;=0 &amp;&amp; livello&lt;=100) {&#13;&#10;    &#9;&#9;&#9;irrigatori[i]=livello;&#13;&#10;    &#9;&#9;}&#13;&#10;    &#9;}&#13;&#10;    &#9;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che restituisce lo stato di una particolare luce all'interno della serra&#13;&#10;    public StatoLuce getStatoLuce(int l) {&#13;&#10;    &#9;&#13;&#10;    &#9;StatoLuce sl=null;&#13;&#10;    &#9;&#13;&#10;    &#9;if(l&gt;=0 &amp;&amp; l&lt;luci.length) {&#13;&#10;    &#9;&#9;sl=luci[l];&#13;&#10;    &#9;}&#13;&#10;    &#9;&#13;&#10;    &#9;return sl;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che restituisce lo stato di un particolare ventilatore all'interno della serra&#13;&#10;    public StatoVentilatore getStatoVentilatore(Ventilatore v) {&#13;&#10;    &#9;return ventilatori.get(v);&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che restituisce il livello di un particolare irrigatore all'interno della serra&#13;&#10;    public int getLivelloIrrigatore(int i) {&#13;&#10;    &#9;&#13;&#10;    &#9;int si=-1; //se il numero dell'irrigatore non   presente, viene restituito un valore negativo&#13;&#10;    &#9;&#13;&#10;    &#9;if(i&gt;=0 &amp;&amp; i&lt;irrigatori.length) {&#13;&#10;    &#9;&#9;si=irrigatori[i];&#13;&#10;    &#9;}&#13;&#10;    &#9;&#13;&#10;    &#9;return si;&#13;&#10;    }&#13;&#10;&#9;&#13;&#10;}&#13;&#10;" Filename="CentralinaSerra.java" Intrnl_Id="1"/>
+        <SrcFile Content="package main;&#13;&#10;&#13;&#10;//Enumerativo che rappresenta la possibile modalità di gestione della serra, manuale o automatica&#13;&#10;public enum Modalita {&#13;&#10;&#9;AUTOMATICA,&#13;&#10;&#9;MANUALE&#13;&#10;}&#13;&#10;" Filename="Modalita.java" Intrnl_Id="2"/>
+        <SrcFile Content="package main;&#13;&#10;//Questa classe conterrà la logica centrale per gestire gli attuatori in base ai valori ambientali&#13;&#10;public class SerraSmartController {&#13;&#10;&#9;&#13;&#10;&#9;private /*@ spec_public */ int sogliaLuceMin;&#13;&#10;&#9;private /*@ spec_public */ int sogliaLuceMax;&#13;&#10;    private /*@ spec_public */ int sogliaTempMin;&#13;&#10;    private /*@ spec_public */ int sogliaTempMax;&#13;&#10;    private /*@ spec_public */ int sogliaUmiditaMin;&#13;&#10;    private /*@ spec_public */ int sogliaUmiditaMax;&#13;&#10;    &#13;&#10;    //Definizione invarianti&#13;&#10;    //1- Le soglie di luminosità massima e minima devono essere sempre &gt;=0 e &lt;=1000 (espressi in lux)&#13;&#10;    //2- Le soglie di temperatura massima e minima devono essere sempre &gt;=0 e &lt;=100 (espressi in gradi centigradi)&#13;&#10;    //3- Le soglie di umidità massima e minima devono essere sempre &gt;=0 e &lt;=100 (espressi in %)&#13;&#10;    //4- La soglia minima deve essere sempre minore o uguale rispetto alla soglia massima&#13;&#10;    //@ public invariant sogliaLuceMin&gt;=0 &amp;&amp; sogliaLuceMin&lt;=1000;&#13;&#10;    //@ public invariant sogliaLuceMax&gt;=0 &amp;&amp; sogliaLuceMax&lt;=1000;&#13;&#10;    //@ public invariant sogliaTempMin&gt;=0 &amp;&amp; sogliaTempMin&lt;=100;&#13;&#10;    //@ public invariant sogliaTempMax&gt;=0 &amp;&amp; sogliaTempMax&lt;=100;&#13;&#10;    //@ public invariant sogliaUmiditaMin&gt;=0 &amp;&amp; sogliaUmiditaMin&lt;=100;&#13;&#10;    //@ public invariant sogliaUmiditaMax&gt;=0 &amp;&amp; sogliaUmiditaMax&lt;=100;&#13;&#10;    //@ public invariant sogliaLuceMin&lt;=sogliaLuceMax;&#13;&#10;    //@ public invariant sogliaTempMin&lt;=sogliaTempMax;&#13;&#10;    //@ public invariant sogliaUmiditaMin&lt;=sogliaUmiditaMax;&#13;&#10;    &#13;&#10;    //Costruttore&#13;&#10;    //@ requires luceMin&gt;=0 &amp;&amp; luceMin&lt;=1000 &amp;&amp; luceMin&lt;=luceMax;&#13;&#10;    //@ requires luceMax&gt;=0 &amp;&amp; luceMax&lt;=1000 &amp;&amp; luceMax&gt;=luceMin;&#13;&#10;    //@ requires tempMin&gt;=0 &amp;&amp; tempMin&lt;=100 &amp;&amp; tempMin&lt;=tempMax;&#13;&#10;    //@ requires tempMax&gt;=0 &amp;&amp; tempMax&lt;=100 &amp;&amp; tempMax&gt;=tempMin;&#13;&#10;    //@ requires uMin&gt;=0 &amp;&amp; uMin&lt;=100 &amp;&amp; uMin&lt;=uMax;&#13;&#10;    //@ requires uMax&gt;=0 &amp;&amp; uMax&lt;=100 &amp;&amp; uMax&gt;=uMin;&#13;&#10;    //@ ensures sogliaLuceMin==luceMin;&#13;&#10;    //@ ensures sogliaLuceMax==luceMax;&#13;&#10;    //@ ensures sogliaTempMin==tempMin;&#13;&#10;    //@ ensures sogliaTempMax==tempMax;&#13;&#10;    //@ ensures sogliaUmiditaMin==uMin;&#13;&#10;    //@ ensures sogliaUmiditaMax==uMax;&#13;&#10;    public SerraSmartController(int luceMin, int luceMax, int tempMin, int tempMax, int uMin, int uMax) {&#13;&#10;    &#9;sogliaLuceMin=luceMin;&#13;&#10;    &#9;sogliaLuceMax=luceMax;&#13;&#10;    &#9;&#13;&#10;    &#9;sogliaTempMin=tempMin;&#13;&#10;    &#9;sogliaTempMax=tempMax;&#13;&#10;    &#9;&#13;&#10;    &#9;sogliaUmiditaMin=uMin;&#13;&#10;    &#9;sogliaUmiditaMax=uMax;&#13;&#10;    &#9;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che specifica se la luminosità è insufficiente&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- La luminosità rilevata deve essere tra gli 0 e i 1000 lux&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se la luminosità è insufficiente, altrimenti false&#13;&#10;    //@ requires lux &gt;= 0 &amp;&amp; lux &lt;= 1000;&#13;&#10;    //@ ensures \result &lt;==&gt; (lux &lt; sogliaLuceMin);&#13;&#10;    public /*@ pure @*/ boolean luceInsufficiente(int lux) {&#13;&#10;        return lux &lt; sogliaLuceMin;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che specifica se la luminosità è troppo elevata&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- La luminosità rilevata deve essere tra gli 0 e i 1000 lux&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se la luminosità è troppo alta, altrimenti false&#13;&#10;    //@ requires lux &gt;= 0 &amp;&amp; lux &lt;= 1000;&#13;&#10;    //@ ensures \result &lt;==&gt; (lux &gt; sogliaLuceMax);&#13;&#10;    public /*@ pure @*/ boolean luceTroppoAlta(int lux) {&#13;&#10;        return lux &gt; sogliaLuceMax;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che specifica se la temperatura rilevata è troppo bassa&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- La temperatura rilevata deve essere al massimo 100 gradi centigradi&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se la temperatura è insufficiente, altrimenti false&#13;&#10;    //@ requires temperatura &lt;= 100;&#13;&#10;    //@ ensures \result &lt;==&gt; (temperatura &lt; sogliaTempMin);&#13;&#10;    public /*@ pure @*/ boolean temperaturaTroppoBassa(int temperatura) {&#13;&#10;        return temperatura &lt; sogliaTempMin;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che specifica se la temperatura rilevata è troppo alta&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- La temperatura rilevata deve essere al massimo 100 gradi centigradi&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se la temperatura è troppo elevata, altrimenti false&#13;&#10;    //@ requires temperatura &lt;= 100;&#13;&#10;    //@ ensures \result &lt;==&gt; (temperatura &gt; sogliaTempMax);&#13;&#10;    public /*@ pure @*/ boolean temperaturaTroppoAlta(int temperatura) {&#13;&#10;        return temperatura &gt; sogliaTempMax;&#13;&#10;    }&#13;&#10;&#13;&#10;    &#13;&#10;    //Metodo che specifica se l'umidità rilevata è troppo bassa&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- L'umidità rilevata deve essere compresa tra lo 0% e il 100%&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se l'umidità è insufficiente, altrimenti false&#13;&#10;    //@ requires umidita &gt;= 0 &amp;&amp; umidita &lt;= 100;&#13;&#10;    //@ ensures \result &lt;==&gt; (umidita &lt; sogliaUmiditaMin);&#13;&#10;    public /*@ pure @*/ boolean umiditaTroppoBassa(int umidita) {&#13;&#10;        return umidita &lt; sogliaUmiditaMin;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo che specifica se l'umidità rilevata è troppo alta&#13;&#10;    //Pre-condizioni:&#13;&#10;    //1- L'umidità rilevata deve essere compresa tra lo 0% e il 100%&#13;&#10;    //Post-condizioni:&#13;&#10;    //1- il metodo deve restituire true se l'umidità è troppo alta, altrimenti false&#13;&#10;    //@ requires umidita &gt;= 0 &amp;&amp; umidita &lt;= 100;&#13;&#10;    //@ ensures \result &lt;==&gt; (umidita &gt; sogliaUmiditaMax);&#13;&#10;    public /*@ pure @*/ boolean umiditaTroppoAlta(int umidita) {&#13;&#10;        return umidita &gt; sogliaUmiditaMax;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo per settare la luminosità minima&#13;&#10;    //@ requires l &gt;= 0 &amp;&amp; l &lt;= 1000 &amp;&amp; l&lt;=sogliaLuceMax;&#13;&#10;    //@ ensures sogliaLuceMin == l;&#13;&#10;    public void setSogliaLuceMin(int l) {&#13;&#10;        sogliaLuceMin = l;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo per settare la luminosità massima&#13;&#10;    //@ requires l &gt;= 0 &amp;&amp; l &lt;= 1000 &amp;&amp; l&gt;=sogliaLuceMin;&#13;&#10;    //@ ensures sogliaLuceMax == l;&#13;&#10;    public void setSogliaLuceMax(int l) {&#13;&#10;        sogliaLuceMax = l;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo per settare la temperatura minima&#13;&#10;    //@ requires t &gt;= 0 &amp;&amp; t &lt;= 100 &amp;&amp; t&lt;=sogliaTempMax;&#13;&#10;    //@ ensures sogliaTempMin == t;&#13;&#10;    public void setSogliaTempMin(int t) {&#13;&#10;        sogliaTempMin = t;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo per settare la temperatura massima&#13;&#10;    //@ requires t &gt;= 0 &amp;&amp; t &lt;= 100 &amp;&amp; t&gt;=sogliaTempMin;&#13;&#10;    //@ ensures sogliaTempMax == t;&#13;&#10;    public void setSogliaTempMax(int t) {&#13;&#10;        sogliaTempMax = t;&#13;&#10;    }&#13;&#10;&#13;&#10;    //Metodo per settare l'umidità minima&#13;&#10;    //@ requires u &gt;= 0 &amp;&amp; u &lt;= 100 &amp;&amp; u&lt;=sogliaUmiditaMax;&#13;&#10;    //@ ensures sogliaUmiditaMin == u;&#13;&#10;    public void setSogliaUmiditaMin(int u) {&#13;&#10;        sogliaUmiditaMin = u;&#13;&#10;    }&#13;&#10;    &#13;&#10;    //Metodo per settare l'umidità massima&#13;&#10;    //@ requires u &gt;= 0 &amp;&amp; u &lt;= 100 &amp;&amp; u&gt;=sogliaUmiditaMin;&#13;&#10;    //@ ensures sogliaUmiditaMax == u;&#13;&#10;    public void setSogliaUmiditaMax(int u) {&#13;&#10;        sogliaUmiditaMax = u;&#13;&#10;    }&#13;&#10;}&#13;&#10;" Filename="SerraSmartController.java" Intrnl_Id="3"/>
+        <SrcFile Content="package main;&#13;&#10;&#13;&#10;//Enumerativo che rappresenta lo stato in cui può essere una luce&#13;&#10;public enum StatoLuce {&#13;&#10;&#9;ON,&#13;&#10;&#9;OFF&#13;&#10;}&#13;&#10;" Filename="StatoLuce.java" Intrnl_Id="4"/>
+        <SrcFile Content="package main;&#13;&#10;&#13;&#10;//Enumerativo che rappresenta lo stato in cui può essere un ventilatore&#13;&#10;public enum StatoVentilatore {&#13;&#10;&#9;ACCESO,&#13;&#10;&#9;SPENTO&#13;&#10;}&#13;&#10;" Filename="StatoVentilatore.java" Intrnl_Id="5"/>
+        <SrcFile Content="package main;&#13;&#10;&#13;&#10;//Enumerativo che specifica i 2 tipi possibili di ventilatore&#13;&#10;public enum Ventilatore {&#13;&#10;&#9;PRINCIPALE,&#13;&#10;&#9;SECONDARIO&#13;&#10;}&#13;&#10;" Filename="Ventilatore.java" Intrnl_Id="6"/>
+        <SrcFile Content="package test;&#13;&#10;&#13;&#10;import static org.junit.jupiter.api.Assertions.*;&#13;&#10;&#13;&#10;import org.junit.jupiter.api.BeforeEach;&#13;&#10;import org.junit.jupiter.api.Test;&#13;&#10;&#13;&#10;import main.CentralinaSerra;&#13;&#10;import main.Modalita;&#13;&#10;import main.SerraSmartController;&#13;&#10;import main.StatoLuce;&#13;&#10;import main.StatoVentilatore;&#13;&#10;import main.Ventilatore;&#13;&#10;&#13;&#10;//Classe di test per la classe CentralinaSerra&#13;&#10;class CentralinaSerraTest {&#13;&#10;&#9;&#13;&#10;    private CentralinaSerra centralina;&#13;&#10;&#13;&#10;    @BeforeEach&#13;&#10;    public void setUp() {&#13;&#10;        // Soglie: luceMin=200, luceMax=800, tempMin=15, tempMax=30, umiditaMin=30, umiditaMax=70&#13;&#10;        SerraSmartController controller = new SerraSmartController(200, 800, 15, 30, 30, 70);&#13;&#10;        centralina = new CentralinaSerra(3, 2, controller, Modalita.AUTOMATICA);&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testLuceInsufficienteAccendeLuci() {&#13;&#10;        centralina.aggiornaSensori(25, 50, 100); // luce &lt; sogliaLuceMin&#13;&#10;        // Tutte le luci devono essere accese&#13;&#10;        for (int i = 0; i &lt; 3; i++) {&#13;&#10;            assertEquals(StatoLuce.ON, centralina.getStatoLuce(i));&#13;&#10;        }&#13;&#10;        assertEquals(Modalita.AUTOMATICA, centralina.getModalita());&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testLuceTroppoAltaSpegneLuci() {&#13;&#10;        centralina.accendiLuci(); // Prima accendiamo&#13;&#10;        centralina.aggiornaSensori(25, 50, 900); // luce &gt; sogliaLuceMax&#13;&#10;        for (int i = 0; i &lt; 3; i++) {&#13;&#10;            assertEquals(StatoLuce.OFF, centralina.getStatoLuce(i));&#13;&#10;        }&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testTemperaturaTroppoAltaAccendeVentilatori() {&#13;&#10;        centralina.aggiornaSensori(40, 50, 300); // temperatura &gt; sogliaTempMax&#13;&#10;        assertEquals(StatoVentilatore.ACCESO, centralina.getStatoVentilatore(Ventilatore.PRINCIPALE));&#13;&#10;        assertEquals(StatoVentilatore.ACCESO, centralina.getStatoVentilatore(Ventilatore.SECONDARIO));&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testTemperaturaTroppoBassaSpegneVentilatori() {&#13;&#10;        centralina.accendiVentilatori();&#13;&#10;        centralina.aggiornaSensori(10, 50, 300); // temperatura &lt; sogliaTempMin&#13;&#10;        assertEquals(StatoVentilatore.SPENTO, centralina.getStatoVentilatore(Ventilatore.PRINCIPALE));&#13;&#10;        // Tutte le luci devono essere accese&#13;&#10;        for (int i = 0; i &lt; 3; i++) {&#13;&#10;            assertEquals(StatoLuce.ON, centralina.getStatoLuce(i));&#13;&#10;        }&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testUmiditaTroppoAltaSpegneIrrigatori() {&#13;&#10;        centralina.accendiIrrigatori();&#13;&#10;        centralina.aggiornaSensori(25, 90, 300); // umidità  &gt; sogliaUmiditaMax&#13;&#10;        for (int i = 0; i &lt; 2; i++) {&#13;&#10;            assertEquals(0, centralina.getLivelloIrrigatore(i));&#13;&#10;        }&#13;&#10;    }&#13;&#10;    &#13;&#10;    @Test&#13;&#10;    public void testUmiditaTroppoBassaAccendeIrrigatori() {&#13;&#10;        centralina.spegniIrrigatori();&#13;&#10;        centralina.aggiornaSensori(25, 20, 300); // umidità  &lt; sogliaUmiditaMin&#13;&#10;        for (int i = 0; i &lt; 2; i++) {&#13;&#10;            assertEquals(100, centralina.getLivelloIrrigatore(i));&#13;&#10;        }&#13;&#10;    }&#13;&#10;&#13;&#10;    @Test&#13;&#10;    public void testManualeModificaStato() {&#13;&#10;        centralina.setModalita(Modalita.MANUALE);&#13;&#10;        centralina.aggiornaSensori(25, 20, 300);&#13;&#10;        centralina.setLuce(0, StatoLuce.ON);&#13;&#10;        centralina.setVentilatore(Ventilatore.PRINCIPALE, StatoVentilatore.ACCESO);&#13;&#10;        centralina.setIrrigatore(0, 52);&#13;&#10;        assertEquals(Modalita.MANUALE, centralina.getModalita());&#13;&#10;        assertEquals(StatoLuce.ON, centralina.getStatoLuce(0));&#13;&#10;        assertEquals(StatoVentilatore.ACCESO, centralina.getStatoVentilatore(Ventilatore.PRINCIPALE));&#13;&#10;        assertEquals(52, centralina.getLivelloIrrigatore(0));&#13;&#10;        &#13;&#10;    }&#13;&#10;    &#13;&#10;    @Test&#13;&#10;    public void testModificheErrate() {&#13;&#10;    &#9;centralina.spegniLuci();&#13;&#10;    &#9;centralina.spegniVentilatori();&#13;&#10;    &#9;centralina.spegniIrrigatori();&#13;&#10;    &#9;&#13;&#10;    &#9;//SetLuce&#13;&#10;    &#9;centralina.setModalita(Modalita.AUTOMATICA);&#13;&#10;    &#9;centralina.setLuce(0, StatoLuce.OFF);&#13;&#10;    &#9;centralina.setLuce(-1, StatoLuce.OFF);&#13;&#10;    &#9;&#13;&#10;    &#9;//SetVentilatore&#13;&#10;    &#9;centralina.setModalita(Modalita.AUTOMATICA);&#13;&#10;    &#9;centralina.setVentilatore(Ventilatore.SECONDARIO, StatoVentilatore.ACCESO);&#13;&#10;    &#9;&#13;&#10;    &#9;//SetIrrigatore&#13;&#10;    &#9;centralina.setModalita(Modalita.AUTOMATICA);&#13;&#10;    &#9;centralina.setIrrigatore(-1, 50);&#13;&#10;    &#9;&#13;&#10;    &#9;//getStatoLuce&#13;&#10;    &#9;assertNull(centralina.getStatoLuce(-1));&#13;&#10;    &#9;&#13;&#10;    &#9;//getLivelloIrrigatore&#13;&#10;    &#9;assertEquals(-1,centralina.getLivelloIrrigatore(-1));&#13;&#10;    &#9;&#13;&#10;    }&#13;&#10;&#13;&#10;}&#13;&#10;" Filename="CentralinaSerraTest.java" Intrnl_Id="7"/>
+    </SrcFileList>
+    <CritList>
+        <CritListEntry Name="org.codecover.model.utils.criteria.LoopCoverage" PluginName="org.codecover"/>
+        <CritListEntry Name="org.codecover.model.utils.criteria.QMOCoverage" PluginName="org.codecover"/>
+        <CritListEntry Name="org.codecover.model.utils.criteria.ConditionCoverage" PluginName="org.codecover"/>
+        <CritListEntry Name="org.codecover.model.utils.criteria.BranchCoverage" PluginName="org.codecover"/>
+        <CritListEntry Name="org.codecover.model.utils.criteria.SynchronizedStatementCoverage" PluginName="org.codecover"/>
+        <CritListEntry Name="org.codecover.model.utils.criteria.StatementCoverage" PluginName="org.codecover"/>
+    </CritList>
+    <BoolOpList>
+        <BoolOp Arity="2" Intrnl_Id="8" Name="conditional and (&amp;&amp;)">
+            <BoolAssgnmntBoolMapList>
+                <MapEntry BoolAssgnmnt="02" Value="false"/>
+                <MapEntry BoolAssgnmnt="10" Value="false"/>
+                <MapEntry BoolAssgnmnt="11" Value="true"/>
+            </BoolAssgnmntBoolMapList>
+        </BoolOp>
+    </BoolOpList>
+    <HierarchyLvlTypeList>
+        <HierarchyLvlType EnglishName="enumeration" IntrnlName="enum" Intrnl_Id="9"/>
+        <HierarchyLvlType EnglishName="package" IntrnlName="package" Intrnl_Id="10"/>
+        <HierarchyLvlType EnglishName="method" IntrnlName="method" Intrnl_Id="11"/>
+        <HierarchyLvlType EnglishName="class" IntrnlName="class" Intrnl_Id="12"/>
+        <HierarchyLvlType EnglishName="default package" IntrnlName="default package" Intrnl_Id="13"/>
+    </HierarchyLvlTypeList>
+    <MASTRoot>
+        <HierarchyLvl HierarchyLvlId="513" HierarchyLvlTypeId="13" Intrnl_Id="14" Name="default package">
+            <Header/>
+            <LocList/>
+            <HierarchyLvl HierarchyLvlId="511" HierarchyLvlTypeId="10" Intrnl_Id="15" Name="main">
+                <Header/>
+                <LocList/>
+                <HierarchyLvl HierarchyLvlId="482" HierarchyLvlTypeId="12" Intrnl_Id="16" Name="CentralinaSerra">
+                    <Header>
+                        <Loc EndOffset="156" SrcFileId="1" StartOffset="128"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="5925" SrcFileId="1" StartOffset="128"/>
+                    </LocList>
+                    <HierarchyLvl HierarchyLvlId="466" HierarchyLvlTypeId="11" Intrnl_Id="17" Name="CentralinaSerra">
+                        <Header>
+                            <Loc EndOffset="480" SrcFileId="1" StartOffset="376"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1150" SrcFileId="1" StartOffset="376"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="18">
+                            <LocList>
+                                <Loc EndOffset="524" SrcFileId="1" StartOffset="490"/>
+                                <Loc EndOffset="653" SrcFileId="1" StartOffset="528"/>
+                                <Loc EndOffset="701" SrcFileId="1" StartOffset="661"/>
+                                <Loc EndOffset="814" SrcFileId="1" StartOffset="705"/>
+                                <Loc EndOffset="886" SrcFileId="1" StartOffset="822"/>
+                                <Loc EndOffset="960" SrcFileId="1" StartOffset="890"/>
+                                <Loc EndOffset="1084" SrcFileId="1" StartOffset="1014"/>
+                                <Loc EndOffset="1115" SrcFileId="1" StartOffset="1092"/>
+                                <Loc EndOffset="1146" SrcFileId="1" StartOffset="1119"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S1" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="19">
+                                <LocList>
+                                    <Loc EndOffset="524" SrcFileId="1" StartOffset="490"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S2" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="20" MltplExecId="L1-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L1-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L1-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="21">
+                                    <LocList>
+                                        <Loc EndOffset="583" SrcFileId="1" StartOffset="561"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S3" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="22">
+                                        <LocList>
+                                            <Loc EndOffset="583" SrcFileId="1" StartOffset="561"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="531" SrcFileId="1" StartOffset="528"/>
+                                <LocList>
+                                    <Loc EndOffset="653" SrcFileId="1" StartOffset="528"/>
+                                </LocList>
+                                <RootTerm CovItemId="C1" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="23">
+                                    <BasicBoolTerm Intrnl_Id="24">
+                                        <LocList>
+                                            <Loc EndOffset="549" SrcFileId="1" StartOffset="541"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                            <BasicStmnt CovItemId="S4" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="25">
+                                <LocList>
+                                    <Loc EndOffset="701" SrcFileId="1" StartOffset="661"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S5" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="26" MltplExecId="L2-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L2-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L2-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="27">
+                                    <LocList>
+                                        <Loc EndOffset="761" SrcFileId="1" StartOffset="745"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S6" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="28">
+                                        <LocList>
+                                            <Loc EndOffset="761" SrcFileId="1" StartOffset="745"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="708" SrcFileId="1" StartOffset="705"/>
+                                <LocList>
+                                    <Loc EndOffset="814" SrcFileId="1" StartOffset="705"/>
+                                </LocList>
+                                <RootTerm CovItemId="C2" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="29">
+                                    <BasicBoolTerm Intrnl_Id="30">
+                                        <LocList>
+                                            <Loc EndOffset="732" SrcFileId="1" StartOffset="718"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                            <BasicStmnt CovItemId="S7" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="31">
+                                <LocList>
+                                    <Loc EndOffset="886" SrcFileId="1" StartOffset="822"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S8" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="32">
+                                <LocList>
+                                    <Loc EndOffset="960" SrcFileId="1" StartOffset="890"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S9" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="33">
+                                <LocList>
+                                    <Loc EndOffset="1084" SrcFileId="1" StartOffset="1014"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S10" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="34">
+                                <LocList>
+                                    <Loc EndOffset="1115" SrcFileId="1" StartOffset="1092"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S11" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="35">
+                                <LocList>
+                                    <Loc EndOffset="1146" SrcFileId="1" StartOffset="1119"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="467" HierarchyLvlTypeId="11" Intrnl_Id="36" Name="setModalita">
+                        <Header>
+                            <Loc EndOffset="1263" SrcFileId="1" StartOffset="1228"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1300" SrcFileId="1" StartOffset="1228"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="37">
+                            <LocList>
+                                <Loc EndOffset="1293" SrcFileId="1" StartOffset="1275"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S12" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="38">
+                                <LocList>
+                                    <Loc EndOffset="1293" SrcFileId="1" StartOffset="1275"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="468" HierarchyLvlTypeId="11" Intrnl_Id="39" Name="getModalita">
+                        <Header>
+                            <Loc EndOffset="1338" SrcFileId="1" StartOffset="1309"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1373" SrcFileId="1" StartOffset="1309"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="40">
+                            <LocList>
+                                <Loc EndOffset="1366" SrcFileId="1" StartOffset="1350"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S13" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="41">
+                                <LocList>
+                                    <Loc EndOffset="1366" SrcFileId="1" StartOffset="1350"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="469" HierarchyLvlTypeId="11" Intrnl_Id="42" Name="accendiLuci">
+                        <Header>
+                            <Loc EndOffset="1470" SrcFileId="1" StartOffset="1445"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1550" SrcFileId="1" StartOffset="1445"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="43">
+                            <LocList>
+                                <Loc EndOffset="1543" SrcFileId="1" StartOffset="1479"/>
+                            </LocList>
+                            <LoopStmnt CovItemId="S14" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="44" MltplExecId="L3-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L3-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L3-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="45">
+                                    <LocList>
+                                        <Loc EndOffset="1538" SrcFileId="1" StartOffset="1517"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S15" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="46">
+                                        <LocList>
+                                            <Loc EndOffset="1538" SrcFileId="1" StartOffset="1517"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="1482" SrcFileId="1" StartOffset="1479"/>
+                                <LocList>
+                                    <Loc EndOffset="1543" SrcFileId="1" StartOffset="1479"/>
+                                </LocList>
+                                <RootTerm CovItemId="C3" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="47">
+                                    <BasicBoolTerm Intrnl_Id="48">
+                                        <LocList>
+                                            <Loc EndOffset="1505" SrcFileId="1" StartOffset="1492"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="470" HierarchyLvlTypeId="11" Intrnl_Id="49" Name="spegniLuci">
+                        <Header>
+                            <Loc EndOffset="1644" SrcFileId="1" StartOffset="1620"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1726" SrcFileId="1" StartOffset="1620"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="50">
+                            <LocList>
+                                <Loc EndOffset="1719" SrcFileId="1" StartOffset="1653"/>
+                            </LocList>
+                            <LoopStmnt CovItemId="S16" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="51" MltplExecId="L4-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L4-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L4-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="52">
+                                    <LocList>
+                                        <Loc EndOffset="1713" SrcFileId="1" StartOffset="1691"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S17" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="53">
+                                        <LocList>
+                                            <Loc EndOffset="1713" SrcFileId="1" StartOffset="1691"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="1656" SrcFileId="1" StartOffset="1653"/>
+                                <LocList>
+                                    <Loc EndOffset="1719" SrcFileId="1" StartOffset="1653"/>
+                                </LocList>
+                                <RootTerm CovItemId="C4" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="54">
+                                    <BasicBoolTerm Intrnl_Id="55">
+                                        <LocList>
+                                            <Loc EndOffset="1679" SrcFileId="1" StartOffset="1666"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="471" HierarchyLvlTypeId="11" Intrnl_Id="56" Name="accendiVentilatori">
+                        <Header>
+                            <Loc EndOffset="1836" SrcFileId="1" StartOffset="1804"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2047" SrcFileId="1" StartOffset="1804"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="57">
+                            <LocList>
+                                <Loc EndOffset="1939" SrcFileId="1" StartOffset="1845"/>
+                                <Loc EndOffset="2040" SrcFileId="1" StartOffset="1946"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S18" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="58">
+                                <LocList>
+                                    <Loc EndOffset="1939" SrcFileId="1" StartOffset="1845"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S19" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="59">
+                                <LocList>
+                                    <Loc EndOffset="2040" SrcFileId="1" StartOffset="1946"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="472" HierarchyLvlTypeId="11" Intrnl_Id="60" Name="spegniVentilatori">
+                        <Header>
+                            <Loc EndOffset="2154" SrcFileId="1" StartOffset="2123"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2365" SrcFileId="1" StartOffset="2123"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="61">
+                            <LocList>
+                                <Loc EndOffset="2257" SrcFileId="1" StartOffset="2163"/>
+                                <Loc EndOffset="2358" SrcFileId="1" StartOffset="2264"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S20" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="62">
+                                <LocList>
+                                    <Loc EndOffset="2257" SrcFileId="1" StartOffset="2163"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S21" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="63">
+                                <LocList>
+                                    <Loc EndOffset="2358" SrcFileId="1" StartOffset="2264"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="473" HierarchyLvlTypeId="11" Intrnl_Id="64" Name="accendiIrrigatori">
+                        <Header>
+                            <Loc EndOffset="2486" SrcFileId="1" StartOffset="2455"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2569" SrcFileId="1" StartOffset="2455"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="65">
+                            <LocList>
+                                <Loc EndOffset="2562" SrcFileId="1" StartOffset="2495"/>
+                            </LocList>
+                            <LoopStmnt CovItemId="S22" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="66" MltplExecId="L5-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L5-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L5-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="67">
+                                    <LocList>
+                                        <Loc EndOffset="2557" SrcFileId="1" StartOffset="2539"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S23" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="68">
+                                        <LocList>
+                                            <Loc EndOffset="2557" SrcFileId="1" StartOffset="2539"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="2498" SrcFileId="1" StartOffset="2495"/>
+                                <LocList>
+                                    <Loc EndOffset="2562" SrcFileId="1" StartOffset="2495"/>
+                                </LocList>
+                                <RootTerm CovItemId="C5" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="69">
+                                    <BasicBoolTerm Intrnl_Id="70">
+                                        <LocList>
+                                            <Loc EndOffset="2527" SrcFileId="1" StartOffset="2508"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="474" HierarchyLvlTypeId="11" Intrnl_Id="71" Name="spegniIrrigatori">
+                        <Header>
+                            <Loc EndOffset="2676" SrcFileId="1" StartOffset="2646"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2757" SrcFileId="1" StartOffset="2646"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="72">
+                            <LocList>
+                                <Loc EndOffset="2750" SrcFileId="1" StartOffset="2685"/>
+                            </LocList>
+                            <LoopStmnt CovItemId="S24" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="73" MltplExecId="L6-2" MltplExecPrefix="main.CentralinaSerra.java" NvrExecId="L6-0" NvrExecPrefix="main.CentralinaSerra.java" OnceExecutedId="L6-1" OnceExecutedPrefix="main.CentralinaSerra.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="74">
+                                    <LocList>
+                                        <Loc EndOffset="2745" SrcFileId="1" StartOffset="2729"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S25" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="75">
+                                        <LocList>
+                                            <Loc EndOffset="2745" SrcFileId="1" StartOffset="2729"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="2688" SrcFileId="1" StartOffset="2685"/>
+                                <LocList>
+                                    <Loc EndOffset="2750" SrcFileId="1" StartOffset="2685"/>
+                                </LocList>
+                                <RootTerm CovItemId="C6" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="76">
+                                    <BasicBoolTerm Intrnl_Id="77">
+                                        <LocList>
+                                            <Loc EndOffset="2717" SrcFileId="1" StartOffset="2698"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="475" HierarchyLvlTypeId="11" Intrnl_Id="78" Name="aggiornaSensori">
+                        <Header>
+                            <Loc EndOffset="2943" SrcFileId="1" StartOffset="2877"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4203" SrcFileId="1" StartOffset="2877"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="79">
+                            <LocList>
+                                <Loc EndOffset="4194" SrcFileId="1" StartOffset="2959"/>
+                            </LocList>
+                            <CondStmnt CovItemId="S26" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="80">
+                                <Branch CovItemId="B1" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="81">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="4194" SrcFileId="1" StartOffset="2996"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="82">
+                                        <LocList>
+                                            <Loc EndOffset="3157" SrcFileId="1" StartOffset="3074"/>
+                                            <Loc EndOffset="3316" SrcFileId="1" StartOffset="3237"/>
+                                            <Loc EndOffset="3577" SrcFileId="1" StartOffset="3446"/>
+                                            <Loc EndOffset="3792" SrcFileId="1" StartOffset="3690"/>
+                                            <Loc EndOffset="3988" SrcFileId="1" StartOffset="3894"/>
+                                            <Loc EndOffset="4169" SrcFileId="1" StartOffset="4077"/>
+                                        </LocList>
+                                        <CondStmnt CovItemId="S27" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="83">
+                                            <Branch CovItemId="B3" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="84">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="3157" SrcFileId="1" StartOffset="3112"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="85">
+                                                    <LocList>
+                                                        <Loc EndOffset="3142" SrcFileId="1" StartOffset="3128"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S28" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="86">
+                                                        <LocList>
+                                                            <Loc EndOffset="3142" SrcFileId="1" StartOffset="3128"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B4" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="87">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="88">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="3076" SrcFileId="1" StartOffset="3074"/>
+                                            <LocList>
+                                                <Loc EndOffset="3157" SrcFileId="1" StartOffset="3074"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C8" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="89">
+                                                <BasicBoolTerm Intrnl_Id="90">
+                                                    <LocList>
+                                                        <Loc EndOffset="3110" SrcFileId="1" StartOffset="3077"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                        <CondStmnt CovItemId="S29" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="91">
+                                            <Branch CovItemId="B5" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="92">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="3316" SrcFileId="1" StartOffset="3272"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="93">
+                                                    <LocList>
+                                                        <Loc EndOffset="3301" SrcFileId="1" StartOffset="3288"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S30" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="94">
+                                                        <LocList>
+                                                            <Loc EndOffset="3301" SrcFileId="1" StartOffset="3288"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B6" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="95">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="96">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="3239" SrcFileId="1" StartOffset="3237"/>
+                                            <LocList>
+                                                <Loc EndOffset="3316" SrcFileId="1" StartOffset="3237"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C9" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="97">
+                                                <BasicBoolTerm Intrnl_Id="98">
+                                                    <LocList>
+                                                        <Loc EndOffset="3270" SrcFileId="1" StartOffset="3240"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                        <CondStmnt CovItemId="S31" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="99">
+                                            <Branch CovItemId="B7" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="100">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="3577" SrcFileId="1" StartOffset="3497"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="101">
+                                                    <LocList>
+                                                        <Loc EndOffset="3533" SrcFileId="1" StartOffset="3513"/>
+                                                        <Loc EndOffset="3562" SrcFileId="1" StartOffset="3548"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S32" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="102">
+                                                        <LocList>
+                                                            <Loc EndOffset="3533" SrcFileId="1" StartOffset="3513"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                    <BasicStmnt CovItemId="S33" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="103">
+                                                        <LocList>
+                                                            <Loc EndOffset="3562" SrcFileId="1" StartOffset="3548"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B8" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="104">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="105">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="3448" SrcFileId="1" StartOffset="3446"/>
+                                            <LocList>
+                                                <Loc EndOffset="3577" SrcFileId="1" StartOffset="3446"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C10" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="106">
+                                                <BasicBoolTerm Intrnl_Id="107">
+                                                    <LocList>
+                                                        <Loc EndOffset="3495" SrcFileId="1" StartOffset="3449"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                        <CondStmnt CovItemId="S34" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="108">
+                                            <Branch CovItemId="B9" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="109">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="3792" SrcFileId="1" StartOffset="3740"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="110">
+                                                    <LocList>
+                                                        <Loc EndOffset="3777" SrcFileId="1" StartOffset="3756"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S35" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="111">
+                                                        <LocList>
+                                                            <Loc EndOffset="3777" SrcFileId="1" StartOffset="3756"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B10" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="112">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="113">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="3692" SrcFileId="1" StartOffset="3690"/>
+                                            <LocList>
+                                                <Loc EndOffset="3792" SrcFileId="1" StartOffset="3690"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C11" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="114">
+                                                <BasicBoolTerm Intrnl_Id="115">
+                                                    <LocList>
+                                                        <Loc EndOffset="3738" SrcFileId="1" StartOffset="3693"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                        <CondStmnt CovItemId="S36" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="116">
+                                            <Branch CovItemId="B11" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="117">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="3988" SrcFileId="1" StartOffset="3937"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="118">
+                                                    <LocList>
+                                                        <Loc EndOffset="3973" SrcFileId="1" StartOffset="3953"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S37" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="119">
+                                                        <LocList>
+                                                            <Loc EndOffset="3973" SrcFileId="1" StartOffset="3953"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B12" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="120">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="121">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="3896" SrcFileId="1" StartOffset="3894"/>
+                                            <LocList>
+                                                <Loc EndOffset="3988" SrcFileId="1" StartOffset="3894"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C12" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="122">
+                                                <BasicBoolTerm Intrnl_Id="123">
+                                                    <LocList>
+                                                        <Loc EndOffset="3935" SrcFileId="1" StartOffset="3897"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                        <CondStmnt CovItemId="S38" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="124">
+                                            <Branch CovItemId="B13" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="125">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="4169" SrcFileId="1" StartOffset="4119"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="126">
+                                                    <LocList>
+                                                        <Loc EndOffset="4154" SrcFileId="1" StartOffset="4135"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S39" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="127">
+                                                        <LocList>
+                                                            <Loc EndOffset="4154" SrcFileId="1" StartOffset="4135"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B14" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="128">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="129">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="4079" SrcFileId="1" StartOffset="4077"/>
+                                            <LocList>
+                                                <Loc EndOffset="4169" SrcFileId="1" StartOffset="4077"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C13" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="130">
+                                                <BasicBoolTerm Intrnl_Id="131">
+                                                    <LocList>
+                                                        <Loc EndOffset="4117" SrcFileId="1" StartOffset="4080"/>
+                                                    </LocList>
+                                                </BasicBoolTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B2" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="132">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="133">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="2961" SrcFileId="1" StartOffset="2959"/>
+                                <LocList>
+                                    <Loc EndOffset="4194" SrcFileId="1" StartOffset="2959"/>
+                                </LocList>
+                                <RootTerm CovItemId="C7" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="134">
+                                    <BasicBoolTerm Intrnl_Id="135">
+                                        <LocList>
+                                            <Loc EndOffset="2994" SrcFileId="1" StartOffset="2963"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="476" HierarchyLvlTypeId="11" Intrnl_Id="136" Name="setLuce">
+                        <Header>
+                            <Loc EndOffset="4331" SrcFileId="1" StartOffset="4292"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4464" SrcFileId="1" StartOffset="4292"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="137">
+                            <LocList>
+                                <Loc EndOffset="4450" SrcFileId="1" StartOffset="4347"/>
+                            </LocList>
+                            <CondStmnt CovItemId="S40" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="138">
+                                <Branch CovItemId="B15" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="139">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="4450" SrcFileId="1" StartOffset="4378"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="140">
+                                        <LocList>
+                                            <Loc EndOffset="4442" SrcFileId="1" StartOffset="4387"/>
+                                        </LocList>
+                                        <CondStmnt CovItemId="S41" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="141">
+                                            <Branch CovItemId="B17" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="142">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="4442" SrcFileId="1" StartOffset="4413"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="143">
+                                                    <LocList>
+                                                        <Loc EndOffset="4433" SrcFileId="1" StartOffset="4423"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S42" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="144">
+                                                        <LocList>
+                                                            <Loc EndOffset="4433" SrcFileId="1" StartOffset="4423"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B18" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="145">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="146">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="4389" SrcFileId="1" StartOffset="4387"/>
+                                            <LocList>
+                                                <Loc EndOffset="4442" SrcFileId="1" StartOffset="4387"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C15" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="147">
+                                                <OpTerm BooleanOpId="8" Intrnl_Id="148">
+                                                    <BasicBoolTerm Intrnl_Id="149">
+                                                        <LocList>
+                                                            <Loc EndOffset="4394" SrcFileId="1" StartOffset="4390"/>
+                                                        </LocList>
+                                                    </BasicBoolTerm>
+                                                    <BasicBoolTerm Intrnl_Id="150">
+                                                        <LocList>
+                                                            <Loc EndOffset="4411" SrcFileId="1" StartOffset="4398"/>
+                                                        </LocList>
+                                                    </BasicBoolTerm>
+                                                    <LocList>
+                                                        <Loc EndOffset="4397" SrcFileId="1" StartOffset="4395"/>
+                                                    </LocList>
+                                                </OpTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B16" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="151">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="152">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="4349" SrcFileId="1" StartOffset="4347"/>
+                                <LocList>
+                                    <Loc EndOffset="4450" SrcFileId="1" StartOffset="4347"/>
+                                </LocList>
+                                <RootTerm CovItemId="C14" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="153">
+                                    <BasicBoolTerm Intrnl_Id="154">
+                                        <LocList>
+                                            <Loc EndOffset="4376" SrcFileId="1" StartOffset="4350"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="477" HierarchyLvlTypeId="11" Intrnl_Id="155" Name="setVentilatore">
+                        <Header>
+                            <Loc EndOffset="4620" SrcFileId="1" StartOffset="4559"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4724" SrcFileId="1" StartOffset="4559"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="156">
+                            <LocList>
+                                <Loc EndOffset="4710" SrcFileId="1" StartOffset="4636"/>
+                            </LocList>
+                            <CondStmnt CovItemId="S43" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="157">
+                                <Branch CovItemId="B19" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="158">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="4710" SrcFileId="1" StartOffset="4667"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="159">
+                                        <LocList>
+                                            <Loc EndOffset="4702" SrcFileId="1" StartOffset="4676"/>
+                                        </LocList>
+                                        <BasicStmnt CovItemId="S44" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="160">
+                                            <LocList>
+                                                <Loc EndOffset="4702" SrcFileId="1" StartOffset="4676"/>
+                                            </LocList>
+                                        </BasicStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B20" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="161">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="162">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="4638" SrcFileId="1" StartOffset="4636"/>
+                                <LocList>
+                                    <Loc EndOffset="4710" SrcFileId="1" StartOffset="4636"/>
+                                </LocList>
+                                <RootTerm CovItemId="C16" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="163">
+                                    <BasicBoolTerm Intrnl_Id="164">
+                                        <LocList>
+                                            <Loc EndOffset="4665" SrcFileId="1" StartOffset="4639"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="478" HierarchyLvlTypeId="11" Intrnl_Id="165" Name="setIrrigatore">
+                        <Header>
+                            <Loc EndOffset="4901" SrcFileId="1" StartOffset="4856"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5082" SrcFileId="1" StartOffset="4856"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="166">
+                            <LocList>
+                                <Loc EndOffset="5068" SrcFileId="1" StartOffset="4917"/>
+                            </LocList>
+                            <CondStmnt CovItemId="S45" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="167">
+                                <Branch CovItemId="B21" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="168">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="5068" SrcFileId="1" StartOffset="4948"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="169">
+                                        <LocList>
+                                            <Loc EndOffset="5060" SrcFileId="1" StartOffset="4957"/>
+                                        </LocList>
+                                        <CondStmnt CovItemId="S46" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="170">
+                                            <Branch CovItemId="B23" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="171">
+                                                <Cond/>
+                                                <LocList>
+                                                    <Loc EndOffset="5060" SrcFileId="1" StartOffset="5019"/>
+                                                </LocList>
+                                                <StmntSeq Intrnl_Id="172">
+                                                    <LocList>
+                                                        <Loc EndOffset="5051" SrcFileId="1" StartOffset="5029"/>
+                                                    </LocList>
+                                                    <BasicStmnt CovItemId="S47" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="173">
+                                                        <LocList>
+                                                            <Loc EndOffset="5051" SrcFileId="1" StartOffset="5029"/>
+                                                        </LocList>
+                                                    </BasicStmnt>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Branch CovItemId="B24" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="174">
+                                                <Cond/>
+                                                <LocList/>
+                                                <StmntSeq Intrnl_Id="175">
+                                                    <LocList/>
+                                                </StmntSeq>
+                                            </Branch>
+                                            <Keyword EndOffset="4959" SrcFileId="1" StartOffset="4957"/>
+                                            <LocList>
+                                                <Loc EndOffset="5060" SrcFileId="1" StartOffset="4957"/>
+                                            </LocList>
+                                            <RootTerm CovItemId="C18" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="176">
+                                                <OpTerm BooleanOpId="8" Intrnl_Id="177">
+                                                    <OpTerm BooleanOpId="8" Intrnl_Id="178">
+                                                        <OpTerm BooleanOpId="8" Intrnl_Id="179">
+                                                            <BasicBoolTerm Intrnl_Id="180">
+                                                                <LocList>
+                                                                    <Loc EndOffset="4964" SrcFileId="1" StartOffset="4960"/>
+                                                                </LocList>
+                                                            </BasicBoolTerm>
+                                                            <BasicBoolTerm Intrnl_Id="181">
+                                                                <LocList>
+                                                                    <Loc EndOffset="4987" SrcFileId="1" StartOffset="4968"/>
+                                                                </LocList>
+                                                            </BasicBoolTerm>
+                                                            <LocList>
+                                                                <Loc EndOffset="4967" SrcFileId="1" StartOffset="4965"/>
+                                                            </LocList>
+                                                        </OpTerm>
+                                                        <BasicBoolTerm Intrnl_Id="182">
+                                                            <LocList>
+                                                                <Loc EndOffset="5001" SrcFileId="1" StartOffset="4991"/>
+                                                            </LocList>
+                                                        </BasicBoolTerm>
+                                                        <LocList>
+                                                            <Loc EndOffset="4990" SrcFileId="1" StartOffset="4988"/>
+                                                        </LocList>
+                                                    </OpTerm>
+                                                    <BasicBoolTerm Intrnl_Id="183">
+                                                        <LocList>
+                                                            <Loc EndOffset="5017" SrcFileId="1" StartOffset="5005"/>
+                                                        </LocList>
+                                                    </BasicBoolTerm>
+                                                    <LocList>
+                                                        <Loc EndOffset="5004" SrcFileId="1" StartOffset="5002"/>
+                                                    </LocList>
+                                                </OpTerm>
+                                            </RootTerm>
+                                        </CondStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B22" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="184">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="185">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="4919" SrcFileId="1" StartOffset="4917"/>
+                                <LocList>
+                                    <Loc EndOffset="5068" SrcFileId="1" StartOffset="4917"/>
+                                </LocList>
+                                <RootTerm CovItemId="C17" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="186">
+                                    <BasicBoolTerm Intrnl_Id="187">
+                                        <LocList>
+                                            <Loc EndOffset="4946" SrcFileId="1" StartOffset="4920"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="479" HierarchyLvlTypeId="11" Intrnl_Id="188" Name="getStatoLuce">
+                        <Header>
+                            <Loc EndOffset="5217" SrcFileId="1" StartOffset="5181"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5350" SrcFileId="1" StartOffset="5181"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="189">
+                            <LocList>
+                                <Loc EndOffset="5251" SrcFileId="1" StartOffset="5233"/>
+                                <Loc EndOffset="5319" SrcFileId="1" StartOffset="5265"/>
+                                <Loc EndOffset="5343" SrcFileId="1" StartOffset="5333"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S48" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="190">
+                                <LocList>
+                                    <Loc EndOffset="5251" SrcFileId="1" StartOffset="5233"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <CondStmnt CovItemId="S49" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="191">
+                                <Branch CovItemId="B25" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="192">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="5319" SrcFileId="1" StartOffset="5291"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="193">
+                                        <LocList>
+                                            <Loc EndOffset="5311" SrcFileId="1" StartOffset="5300"/>
+                                        </LocList>
+                                        <BasicStmnt CovItemId="S50" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="194">
+                                            <LocList>
+                                                <Loc EndOffset="5311" SrcFileId="1" StartOffset="5300"/>
+                                            </LocList>
+                                        </BasicStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B26" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="195">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="196">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="5267" SrcFileId="1" StartOffset="5265"/>
+                                <LocList>
+                                    <Loc EndOffset="5319" SrcFileId="1" StartOffset="5265"/>
+                                </LocList>
+                                <RootTerm CovItemId="C19" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="197">
+                                    <OpTerm BooleanOpId="8" Intrnl_Id="198">
+                                        <BasicBoolTerm Intrnl_Id="199">
+                                            <LocList>
+                                                <Loc EndOffset="5272" SrcFileId="1" StartOffset="5268"/>
+                                            </LocList>
+                                        </BasicBoolTerm>
+                                        <BasicBoolTerm Intrnl_Id="200">
+                                            <LocList>
+                                                <Loc EndOffset="5289" SrcFileId="1" StartOffset="5276"/>
+                                            </LocList>
+                                        </BasicBoolTerm>
+                                        <LocList>
+                                            <Loc EndOffset="5275" SrcFileId="1" StartOffset="5273"/>
+                                        </LocList>
+                                    </OpTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                            <BasicStmnt CovItemId="S51" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="201">
+                                <LocList>
+                                    <Loc EndOffset="5343" SrcFileId="1" StartOffset="5333"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="480" HierarchyLvlTypeId="11" Intrnl_Id="202" Name="getStatoVentilatore">
+                        <Header>
+                            <Loc EndOffset="5513" SrcFileId="1" StartOffset="5455"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5555" SrcFileId="1" StartOffset="5455"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="203">
+                            <LocList>
+                                <Loc EndOffset="5548" SrcFileId="1" StartOffset="5522"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S52" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="204">
+                                <LocList>
+                                    <Loc EndOffset="5548" SrcFileId="1" StartOffset="5522"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="481" HierarchyLvlTypeId="11" Intrnl_Id="205" Name="getLivelloIrrigatore">
+                        <Header>
+                            <Loc EndOffset="5699" SrcFileId="1" StartOffset="5661"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5919" SrcFileId="1" StartOffset="5661"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="206">
+                            <LocList>
+                                <Loc EndOffset="5725" SrcFileId="1" StartOffset="5715"/>
+                                <Loc EndOffset="5888" SrcFileId="1" StartOffset="5822"/>
+                                <Loc EndOffset="5912" SrcFileId="1" StartOffset="5902"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S53" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="207">
+                                <LocList>
+                                    <Loc EndOffset="5725" SrcFileId="1" StartOffset="5715"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <CondStmnt CovItemId="S54" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="208">
+                                <Branch CovItemId="B27" CovItemPrefix="main.CentralinaSerra.java" Implct="false" Intrnl_Id="209">
+                                    <Cond/>
+                                    <LocList>
+                                        <Loc EndOffset="5888" SrcFileId="1" StartOffset="5854"/>
+                                    </LocList>
+                                    <StmntSeq Intrnl_Id="210">
+                                        <LocList>
+                                            <Loc EndOffset="5880" SrcFileId="1" StartOffset="5863"/>
+                                        </LocList>
+                                        <BasicStmnt CovItemId="S55" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="211">
+                                            <LocList>
+                                                <Loc EndOffset="5880" SrcFileId="1" StartOffset="5863"/>
+                                            </LocList>
+                                        </BasicStmnt>
+                                    </StmntSeq>
+                                </Branch>
+                                <Branch CovItemId="B28" CovItemPrefix="main.CentralinaSerra.java" Implct="true" Intrnl_Id="212">
+                                    <Cond/>
+                                    <LocList/>
+                                    <StmntSeq Intrnl_Id="213">
+                                        <LocList/>
+                                    </StmntSeq>
+                                </Branch>
+                                <Keyword EndOffset="5824" SrcFileId="1" StartOffset="5822"/>
+                                <LocList>
+                                    <Loc EndOffset="5888" SrcFileId="1" StartOffset="5822"/>
+                                </LocList>
+                                <RootTerm CovItemId="C20" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="214">
+                                    <OpTerm BooleanOpId="8" Intrnl_Id="215">
+                                        <BasicBoolTerm Intrnl_Id="216">
+                                            <LocList>
+                                                <Loc EndOffset="5829" SrcFileId="1" StartOffset="5825"/>
+                                            </LocList>
+                                        </BasicBoolTerm>
+                                        <BasicBoolTerm Intrnl_Id="217">
+                                            <LocList>
+                                                <Loc EndOffset="5852" SrcFileId="1" StartOffset="5833"/>
+                                            </LocList>
+                                        </BasicBoolTerm>
+                                        <LocList>
+                                            <Loc EndOffset="5832" SrcFileId="1" StartOffset="5830"/>
+                                        </LocList>
+                                    </OpTerm>
+                                </RootTerm>
+                            </CondStmnt>
+                            <BasicStmnt CovItemId="S56" CovItemPrefix="main.CentralinaSerra.java" Intrnl_Id="218">
+                                <LocList>
+                                    <Loc EndOffset="5912" SrcFileId="1" StartOffset="5902"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                </HierarchyLvl>
+                <HierarchyLvl HierarchyLvlId="483" HierarchyLvlTypeId="9" Intrnl_Id="219" Name="Modalita">
+                    <Header>
+                        <Loc EndOffset="136" SrcFileId="2" StartOffset="116"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="165" SrcFileId="2" StartOffset="116"/>
+                    </LocList>
+                </HierarchyLvl>
+                <HierarchyLvl HierarchyLvlId="497" HierarchyLvlTypeId="12" Intrnl_Id="220" Name="SerraSmartController">
+                    <Header>
+                        <Loc EndOffset="148" SrcFileId="3" StartOffset="115"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="6811" SrcFileId="3" StartOffset="115"/>
+                    </LocList>
+                    <HierarchyLvl HierarchyLvlId="484" HierarchyLvlTypeId="11" Intrnl_Id="221" Name="SerraSmartController">
+                        <Header>
+                            <Loc EndOffset="2236" SrcFileId="3" StartOffset="2137"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2440" SrcFileId="3" StartOffset="2137"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="222">
+                            <LocList>
+                                <Loc EndOffset="2267" SrcFileId="3" StartOffset="2245"/>
+                                <Loc EndOffset="2296" SrcFileId="3" StartOffset="2274"/>
+                                <Loc EndOffset="2332" SrcFileId="3" StartOffset="2310"/>
+                                <Loc EndOffset="2361" SrcFileId="3" StartOffset="2339"/>
+                                <Loc EndOffset="2397" SrcFileId="3" StartOffset="2375"/>
+                                <Loc EndOffset="2426" SrcFileId="3" StartOffset="2404"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S1" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="223">
+                                <LocList>
+                                    <Loc EndOffset="2267" SrcFileId="3" StartOffset="2245"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S2" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="224">
+                                <LocList>
+                                    <Loc EndOffset="2296" SrcFileId="3" StartOffset="2274"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S3" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="225">
+                                <LocList>
+                                    <Loc EndOffset="2332" SrcFileId="3" StartOffset="2310"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S4" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="226">
+                                <LocList>
+                                    <Loc EndOffset="2361" SrcFileId="3" StartOffset="2339"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S5" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="227">
+                                <LocList>
+                                    <Loc EndOffset="2397" SrcFileId="3" StartOffset="2375"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S6" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="228">
+                                <LocList>
+                                    <Loc EndOffset="2426" SrcFileId="3" StartOffset="2404"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="485" HierarchyLvlTypeId="11" Intrnl_Id="229" Name="luceInsufficiente">
+                        <Header>
+                            <Loc EndOffset="2870" SrcFileId="3" StartOffset="2816"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2916" SrcFileId="3" StartOffset="2816"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="230">
+                            <LocList>
+                                <Loc EndOffset="2909" SrcFileId="3" StartOffset="2882"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S7" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="231">
+                                <LocList>
+                                    <Loc EndOffset="2909" SrcFileId="3" StartOffset="2882"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="486" HierarchyLvlTypeId="11" Intrnl_Id="232" Name="luceTroppoAlta">
+                        <Header>
+                            <Loc EndOffset="3342" SrcFileId="3" StartOffset="3291"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="3388" SrcFileId="3" StartOffset="3291"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="233">
+                            <LocList>
+                                <Loc EndOffset="3381" SrcFileId="3" StartOffset="3354"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S8" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="234">
+                                <LocList>
+                                    <Loc EndOffset="3381" SrcFileId="3" StartOffset="3354"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="487" HierarchyLvlTypeId="11" Intrnl_Id="235" Name="temperaturaTroppoBassa">
+                        <Header>
+                            <Loc EndOffset="3854" SrcFileId="3" StartOffset="3787"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="3908" SrcFileId="3" StartOffset="3787"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="236">
+                            <LocList>
+                                <Loc EndOffset="3901" SrcFileId="3" StartOffset="3866"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S9" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="237">
+                                <LocList>
+                                    <Loc EndOffset="3901" SrcFileId="3" StartOffset="3866"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="488" HierarchyLvlTypeId="11" Intrnl_Id="238" Name="temperaturaTroppoAlta">
+                        <Header>
+                            <Loc EndOffset="4373" SrcFileId="3" StartOffset="4307"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4427" SrcFileId="3" StartOffset="4307"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="239">
+                            <LocList>
+                                <Loc EndOffset="4420" SrcFileId="3" StartOffset="4385"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S10" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="240">
+                                <LocList>
+                                    <Loc EndOffset="4420" SrcFileId="3" StartOffset="4385"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="489" HierarchyLvlTypeId="11" Intrnl_Id="241" Name="umiditaTroppoBassa">
+                        <Header>
+                            <Loc EndOffset="4880" SrcFileId="3" StartOffset="4821"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4933" SrcFileId="3" StartOffset="4821"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="242">
+                            <LocList>
+                                <Loc EndOffset="4926" SrcFileId="3" StartOffset="4892"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S11" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="243">
+                                <LocList>
+                                    <Loc EndOffset="4926" SrcFileId="3" StartOffset="4892"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="490" HierarchyLvlTypeId="11" Intrnl_Id="244" Name="umiditaTroppoAlta">
+                        <Header>
+                            <Loc EndOffset="5380" SrcFileId="3" StartOffset="5322"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5433" SrcFileId="3" StartOffset="5322"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="245">
+                            <LocList>
+                                <Loc EndOffset="5426" SrcFileId="3" StartOffset="5392"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S12" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="246">
+                                <LocList>
+                                    <Loc EndOffset="5426" SrcFileId="3" StartOffset="5392"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="491" HierarchyLvlTypeId="11" Intrnl_Id="247" Name="setSogliaLuceMin">
+                        <Header>
+                            <Loc EndOffset="5623" SrcFileId="3" StartOffset="5588"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5660" SrcFileId="3" StartOffset="5588"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="248">
+                            <LocList>
+                                <Loc EndOffset="5653" SrcFileId="3" StartOffset="5635"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S13" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="249">
+                                <LocList>
+                                    <Loc EndOffset="5653" SrcFileId="3" StartOffset="5635"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="492" HierarchyLvlTypeId="11" Intrnl_Id="250" Name="setSogliaLuceMax">
+                        <Header>
+                            <Loc EndOffset="5851" SrcFileId="3" StartOffset="5816"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="5888" SrcFileId="3" StartOffset="5816"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="251">
+                            <LocList>
+                                <Loc EndOffset="5881" SrcFileId="3" StartOffset="5863"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S14" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="252">
+                                <LocList>
+                                    <Loc EndOffset="5881" SrcFileId="3" StartOffset="5863"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="493" HierarchyLvlTypeId="11" Intrnl_Id="253" Name="setSogliaTempMin">
+                        <Header>
+                            <Loc EndOffset="6078" SrcFileId="3" StartOffset="6043"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="6115" SrcFileId="3" StartOffset="6043"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="254">
+                            <LocList>
+                                <Loc EndOffset="6108" SrcFileId="3" StartOffset="6090"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S15" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="255">
+                                <LocList>
+                                    <Loc EndOffset="6108" SrcFileId="3" StartOffset="6090"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="494" HierarchyLvlTypeId="11" Intrnl_Id="256" Name="setSogliaTempMax">
+                        <Header>
+                            <Loc EndOffset="6306" SrcFileId="3" StartOffset="6271"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="6343" SrcFileId="3" StartOffset="6271"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="257">
+                            <LocList>
+                                <Loc EndOffset="6336" SrcFileId="3" StartOffset="6318"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S16" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="258">
+                                <LocList>
+                                    <Loc EndOffset="6336" SrcFileId="3" StartOffset="6318"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="495" HierarchyLvlTypeId="11" Intrnl_Id="259" Name="setSogliaUmiditaMin">
+                        <Header>
+                            <Loc EndOffset="6533" SrcFileId="3" StartOffset="6495"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="6573" SrcFileId="3" StartOffset="6495"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="260">
+                            <LocList>
+                                <Loc EndOffset="6566" SrcFileId="3" StartOffset="6545"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S17" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="261">
+                                <LocList>
+                                    <Loc EndOffset="6566" SrcFileId="3" StartOffset="6545"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="496" HierarchyLvlTypeId="11" Intrnl_Id="262" Name="setSogliaUmiditaMax">
+                        <Header>
+                            <Loc EndOffset="6768" SrcFileId="3" StartOffset="6730"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="6808" SrcFileId="3" StartOffset="6730"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="263">
+                            <LocList>
+                                <Loc EndOffset="6801" SrcFileId="3" StartOffset="6780"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S18" CovItemPrefix="main.SerraSmartController.java" Intrnl_Id="264">
+                                <LocList>
+                                    <Loc EndOffset="6801" SrcFileId="3" StartOffset="6780"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                </HierarchyLvl>
+                <HierarchyLvl HierarchyLvlId="498" HierarchyLvlTypeId="9" Intrnl_Id="265" Name="StatoLuce">
+                    <Header>
+                        <Loc EndOffset="105" SrcFileId="4" StartOffset="84"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="122" SrcFileId="4" StartOffset="84"/>
+                    </LocList>
+                </HierarchyLvl>
+                <HierarchyLvl HierarchyLvlId="499" HierarchyLvlTypeId="9" Intrnl_Id="266" Name="StatoVentilatore">
+                    <Header>
+                        <Loc EndOffset="118" SrcFileId="5" StartOffset="90"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="142" SrcFileId="5" StartOffset="90"/>
+                    </LocList>
+                </HierarchyLvl>
+                <HierarchyLvl HierarchyLvlId="500" HierarchyLvlTypeId="9" Intrnl_Id="267" Name="Ventilatore">
+                    <Header>
+                        <Loc EndOffset="103" SrcFileId="6" StartOffset="80"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="135" SrcFileId="6" StartOffset="80"/>
+                    </LocList>
+                </HierarchyLvl>
+            </HierarchyLvl>
+            <HierarchyLvl HierarchyLvlId="512" HierarchyLvlTypeId="10" Intrnl_Id="268" Name="test">
+                <Header/>
+                <LocList/>
+                <HierarchyLvl HierarchyLvlId="510" HierarchyLvlTypeId="12" Intrnl_Id="269" Name="CentralinaSerraTest">
+                    <Header>
+                        <Loc EndOffset="394" SrcFileId="7" StartOffset="369"/>
+                    </Header>
+                    <LocList>
+                        <Loc EndOffset="4414" SrcFileId="7" StartOffset="369"/>
+                    </LocList>
+                    <HierarchyLvl HierarchyLvlId="501" HierarchyLvlTypeId="11" Intrnl_Id="270" Name="setUp">
+                        <Header>
+                            <Loc EndOffset="484" SrcFileId="7" StartOffset="448"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="769" SrcFileId="7" StartOffset="448"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="271">
+                            <LocList>
+                                <Loc EndOffset="680" SrcFileId="7" StartOffset="595"/>
+                                <Loc EndOffset="762" SrcFileId="7" StartOffset="690"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S1" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="272">
+                                <LocList>
+                                    <Loc EndOffset="680" SrcFileId="7" StartOffset="595"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S2" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="273">
+                                <LocList>
+                                    <Loc EndOffset="762" SrcFileId="7" StartOffset="690"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="502" HierarchyLvlTypeId="11" Intrnl_Id="274" Name="testLuceInsufficienteAccendeLuci">
+                        <Header>
+                            <Loc EndOffset="834" SrcFileId="7" StartOffset="777"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1153" SrcFileId="7" StartOffset="777"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="275">
+                            <LocList>
+                                <Loc EndOffset="886" SrcFileId="7" StartOffset="846"/>
+                                <Loc EndOffset="1076" SrcFileId="7" StartOffset="967"/>
+                                <Loc EndOffset="1146" SrcFileId="7" StartOffset="1086"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S3" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="276">
+                                <LocList>
+                                    <Loc EndOffset="886" SrcFileId="7" StartOffset="846"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S4" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="277" MltplExecId="L1-2" MltplExecPrefix="test.CentralinaSerraTest.java" NvrExecId="L1-0" NvrExecPrefix="test.CentralinaSerraTest.java" OnceExecutedId="L1-1" OnceExecutedPrefix="test.CentralinaSerraTest.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="278">
+                                    <LocList>
+                                        <Loc EndOffset="1065" SrcFileId="7" StartOffset="1010"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S5" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="279">
+                                        <LocList>
+                                            <Loc EndOffset="1065" SrcFileId="7" StartOffset="1010"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="970" SrcFileId="7" StartOffset="967"/>
+                                <LocList>
+                                    <Loc EndOffset="1076" SrcFileId="7" StartOffset="967"/>
+                                </LocList>
+                                <RootTerm CovItemId="C1" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="280">
+                                    <BasicBoolTerm Intrnl_Id="281">
+                                        <LocList>
+                                            <Loc EndOffset="988" SrcFileId="7" StartOffset="983"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                            <BasicStmnt CovItemId="S6" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="282">
+                                <LocList>
+                                    <Loc EndOffset="1146" SrcFileId="7" StartOffset="1086"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="503" HierarchyLvlTypeId="11" Intrnl_Id="283" Name="testLuceTroppoAltaSpegneLuci">
+                        <Header>
+                            <Loc EndOffset="1214" SrcFileId="7" StartOffset="1161"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1472" SrcFileId="7" StartOffset="1161"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="284">
+                            <LocList>
+                                <Loc EndOffset="1251" SrcFileId="7" StartOffset="1226"/>
+                                <Loc EndOffset="1321" SrcFileId="7" StartOffset="1281"/>
+                                <Loc EndOffset="1465" SrcFileId="7" StartOffset="1355"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S7" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="285">
+                                <LocList>
+                                    <Loc EndOffset="1251" SrcFileId="7" StartOffset="1226"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S8" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="286">
+                                <LocList>
+                                    <Loc EndOffset="1321" SrcFileId="7" StartOffset="1281"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S9" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="287" MltplExecId="L2-2" MltplExecPrefix="test.CentralinaSerraTest.java" NvrExecId="L2-0" NvrExecPrefix="test.CentralinaSerraTest.java" OnceExecutedId="L2-1" OnceExecutedPrefix="test.CentralinaSerraTest.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="288">
+                                    <LocList>
+                                        <Loc EndOffset="1454" SrcFileId="7" StartOffset="1398"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S10" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="289">
+                                        <LocList>
+                                            <Loc EndOffset="1454" SrcFileId="7" StartOffset="1398"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="1358" SrcFileId="7" StartOffset="1355"/>
+                                <LocList>
+                                    <Loc EndOffset="1465" SrcFileId="7" StartOffset="1355"/>
+                                </LocList>
+                                <RootTerm CovItemId="C2" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="290">
+                                    <BasicBoolTerm Intrnl_Id="291">
+                                        <LocList>
+                                            <Loc EndOffset="1376" SrcFileId="7" StartOffset="1371"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="504" HierarchyLvlTypeId="11" Intrnl_Id="292" Name="testTemperaturaTroppoAltaAccendeVentilatori">
+                        <Header>
+                            <Loc EndOffset="1548" SrcFileId="7" StartOffset="1480"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="1846" SrcFileId="7" StartOffset="1480"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="293">
+                            <LocList>
+                                <Loc EndOffset="1600" SrcFileId="7" StartOffset="1560"/>
+                                <Loc EndOffset="1735" SrcFileId="7" StartOffset="1641"/>
+                                <Loc EndOffset="1839" SrcFileId="7" StartOffset="1745"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S11" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="294">
+                                <LocList>
+                                    <Loc EndOffset="1600" SrcFileId="7" StartOffset="1560"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S12" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="295">
+                                <LocList>
+                                    <Loc EndOffset="1735" SrcFileId="7" StartOffset="1641"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S13" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="296">
+                                <LocList>
+                                    <Loc EndOffset="1839" SrcFileId="7" StartOffset="1745"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="505" HierarchyLvlTypeId="11" Intrnl_Id="297" Name="testTemperaturaTroppoBassaSpegneVentilatori">
+                        <Header>
+                            <Loc EndOffset="1922" SrcFileId="7" StartOffset="1854"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2324" SrcFileId="7" StartOffset="1854"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="298">
+                            <LocList>
+                                <Loc EndOffset="1966" SrcFileId="7" StartOffset="1934"/>
+                                <Loc EndOffset="2016" SrcFileId="7" StartOffset="1976"/>
+                                <Loc EndOffset="2151" SrcFileId="7" StartOffset="2057"/>
+                                <Loc EndOffset="2317" SrcFileId="7" StartOffset="2208"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S14" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="299">
+                                <LocList>
+                                    <Loc EndOffset="1966" SrcFileId="7" StartOffset="1934"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S15" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="300">
+                                <LocList>
+                                    <Loc EndOffset="2016" SrcFileId="7" StartOffset="1976"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S16" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="301">
+                                <LocList>
+                                    <Loc EndOffset="2151" SrcFileId="7" StartOffset="2057"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S17" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="302" MltplExecId="L3-2" MltplExecPrefix="test.CentralinaSerraTest.java" NvrExecId="L3-0" NvrExecPrefix="test.CentralinaSerraTest.java" OnceExecutedId="L3-1" OnceExecutedPrefix="test.CentralinaSerraTest.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="303">
+                                    <LocList>
+                                        <Loc EndOffset="2306" SrcFileId="7" StartOffset="2251"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S18" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="304">
+                                        <LocList>
+                                            <Loc EndOffset="2306" SrcFileId="7" StartOffset="2251"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="2211" SrcFileId="7" StartOffset="2208"/>
+                                <LocList>
+                                    <Loc EndOffset="2317" SrcFileId="7" StartOffset="2208"/>
+                                </LocList>
+                                <RootTerm CovItemId="C3" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="305">
+                                    <BasicBoolTerm Intrnl_Id="306">
+                                        <LocList>
+                                            <Loc EndOffset="2229" SrcFileId="7" StartOffset="2224"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="506" HierarchyLvlTypeId="11" Intrnl_Id="307" Name="testUmiditaTroppoAltaSpegneIrrigatori">
+                        <Header>
+                            <Loc EndOffset="2394" SrcFileId="7" StartOffset="2332"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2641" SrcFileId="7" StartOffset="2332"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="308">
+                            <LocList>
+                                <Loc EndOffset="2437" SrcFileId="7" StartOffset="2406"/>
+                                <Loc EndOffset="2487" SrcFileId="7" StartOffset="2447"/>
+                                <Loc EndOffset="2634" SrcFileId="7" StartOffset="2528"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S19" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="309">
+                                <LocList>
+                                    <Loc EndOffset="2437" SrcFileId="7" StartOffset="2406"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S20" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="310">
+                                <LocList>
+                                    <Loc EndOffset="2487" SrcFileId="7" StartOffset="2447"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S21" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="311" MltplExecId="L4-2" MltplExecPrefix="test.CentralinaSerraTest.java" NvrExecId="L4-0" NvrExecPrefix="test.CentralinaSerraTest.java" OnceExecutedId="L4-1" OnceExecutedPrefix="test.CentralinaSerraTest.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="312">
+                                    <LocList>
+                                        <Loc EndOffset="2623" SrcFileId="7" StartOffset="2571"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S22" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="313">
+                                        <LocList>
+                                            <Loc EndOffset="2623" SrcFileId="7" StartOffset="2571"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="2531" SrcFileId="7" StartOffset="2528"/>
+                                <LocList>
+                                    <Loc EndOffset="2634" SrcFileId="7" StartOffset="2528"/>
+                                </LocList>
+                                <RootTerm CovItemId="C4" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="314">
+                                    <BasicBoolTerm Intrnl_Id="315">
+                                        <LocList>
+                                            <Loc EndOffset="2549" SrcFileId="7" StartOffset="2544"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="507" HierarchyLvlTypeId="11" Intrnl_Id="316" Name="testUmiditaTroppoBassaAccendeIrrigatori">
+                        <Header>
+                            <Loc EndOffset="2717" SrcFileId="7" StartOffset="2653"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="2965" SrcFileId="7" StartOffset="2653"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="317">
+                            <LocList>
+                                <Loc EndOffset="2759" SrcFileId="7" StartOffset="2729"/>
+                                <Loc EndOffset="2809" SrcFileId="7" StartOffset="2769"/>
+                                <Loc EndOffset="2958" SrcFileId="7" StartOffset="2850"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S23" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="318">
+                                <LocList>
+                                    <Loc EndOffset="2759" SrcFileId="7" StartOffset="2729"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S24" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="319">
+                                <LocList>
+                                    <Loc EndOffset="2809" SrcFileId="7" StartOffset="2769"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <LoopStmnt CovItemId="S25" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="320" MltplExecId="L5-2" MltplExecPrefix="test.CentralinaSerraTest.java" NvrExecId="L5-0" NvrExecPrefix="test.CentralinaSerraTest.java" OnceExecutedId="L5-1" OnceExecutedPrefix="test.CentralinaSerraTest.java" OptBodyExec="true">
+                                <StmntSeq Intrnl_Id="321">
+                                    <LocList>
+                                        <Loc EndOffset="2947" SrcFileId="7" StartOffset="2893"/>
+                                    </LocList>
+                                    <BasicStmnt CovItemId="S26" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="322">
+                                        <LocList>
+                                            <Loc EndOffset="2947" SrcFileId="7" StartOffset="2893"/>
+                                        </LocList>
+                                    </BasicStmnt>
+                                </StmntSeq>
+                                <Keyword EndOffset="2853" SrcFileId="7" StartOffset="2850"/>
+                                <LocList>
+                                    <Loc EndOffset="2958" SrcFileId="7" StartOffset="2850"/>
+                                </LocList>
+                                <RootTerm CovItemId="C5" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="323">
+                                    <BasicBoolTerm Intrnl_Id="324">
+                                        <LocList>
+                                            <Loc EndOffset="2871" SrcFileId="7" StartOffset="2866"/>
+                                        </LocList>
+                                    </BasicBoolTerm>
+                                </RootTerm>
+                            </LoopStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="508" HierarchyLvlTypeId="11" Intrnl_Id="325" Name="testManualeModificaStato">
+                        <Header>
+                            <Loc EndOffset="3022" SrcFileId="7" StartOffset="2973"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="3614" SrcFileId="7" StartOffset="2973"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="326">
+                            <LocList>
+                                <Loc EndOffset="3075" SrcFileId="7" StartOffset="3034"/>
+                                <Loc EndOffset="3125" SrcFileId="7" StartOffset="3085"/>
+                                <Loc EndOffset="3171" SrcFileId="7" StartOffset="3135"/>
+                                <Loc EndOffset="3256" SrcFileId="7" StartOffset="3181"/>
+                                <Loc EndOffset="3298" SrcFileId="7" StartOffset="3266"/>
+                                <Loc EndOffset="3365" SrcFileId="7" StartOffset="3308"/>
+                                <Loc EndOffset="3430" SrcFileId="7" StartOffset="3375"/>
+                                <Loc EndOffset="3534" SrcFileId="7" StartOffset="3440"/>
+                                <Loc EndOffset="3597" SrcFileId="7" StartOffset="3544"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S27" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="327">
+                                <LocList>
+                                    <Loc EndOffset="3075" SrcFileId="7" StartOffset="3034"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S28" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="328">
+                                <LocList>
+                                    <Loc EndOffset="3125" SrcFileId="7" StartOffset="3085"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S29" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="329">
+                                <LocList>
+                                    <Loc EndOffset="3171" SrcFileId="7" StartOffset="3135"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S30" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="330">
+                                <LocList>
+                                    <Loc EndOffset="3256" SrcFileId="7" StartOffset="3181"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S31" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="331">
+                                <LocList>
+                                    <Loc EndOffset="3298" SrcFileId="7" StartOffset="3266"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S32" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="332">
+                                <LocList>
+                                    <Loc EndOffset="3365" SrcFileId="7" StartOffset="3308"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S33" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="333">
+                                <LocList>
+                                    <Loc EndOffset="3430" SrcFileId="7" StartOffset="3375"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S34" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="334">
+                                <LocList>
+                                    <Loc EndOffset="3534" SrcFileId="7" StartOffset="3440"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S35" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="335">
+                                <LocList>
+                                    <Loc EndOffset="3597" SrcFileId="7" StartOffset="3544"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                    <HierarchyLvl HierarchyLvlId="509" HierarchyLvlTypeId="11" Intrnl_Id="336" Name="testModificheErrate">
+                        <Header>
+                            <Loc EndOffset="3670" SrcFileId="7" StartOffset="3626"/>
+                        </Header>
+                        <LocList>
+                            <Loc EndOffset="4409" SrcFileId="7" StartOffset="3626"/>
+                        </LocList>
+                        <StmntSeq Intrnl_Id="337">
+                            <LocList>
+                                <Loc EndOffset="3703" SrcFileId="7" StartOffset="3679"/>
+                                <Loc EndOffset="3741" SrcFileId="7" StartOffset="3710"/>
+                                <Loc EndOffset="3778" SrcFileId="7" StartOffset="3748"/>
+                                <Loc EndOffset="3852" SrcFileId="7" StartOffset="3808"/>
+                                <Loc EndOffset="3896" SrcFileId="7" StartOffset="3859"/>
+                                <Loc EndOffset="3941" SrcFileId="7" StartOffset="3903"/>
+                                <Loc EndOffset="4022" SrcFileId="7" StartOffset="3978"/>
+                                <Loc EndOffset="4104" SrcFileId="7" StartOffset="4029"/>
+                                <Loc EndOffset="4184" SrcFileId="7" StartOffset="4140"/>
+                                <Loc EndOffset="4224" SrcFileId="7" StartOffset="4191"/>
+                                <Loc EndOffset="4299" SrcFileId="7" StartOffset="4259"/>
+                                <Loc EndOffset="4395" SrcFileId="7" StartOffset="4342"/>
+                            </LocList>
+                            <BasicStmnt CovItemId="S36" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="338">
+                                <LocList>
+                                    <Loc EndOffset="3703" SrcFileId="7" StartOffset="3679"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S37" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="339">
+                                <LocList>
+                                    <Loc EndOffset="3741" SrcFileId="7" StartOffset="3710"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S38" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="340">
+                                <LocList>
+                                    <Loc EndOffset="3778" SrcFileId="7" StartOffset="3748"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S39" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="341">
+                                <LocList>
+                                    <Loc EndOffset="3852" SrcFileId="7" StartOffset="3808"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S40" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="342">
+                                <LocList>
+                                    <Loc EndOffset="3896" SrcFileId="7" StartOffset="3859"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S41" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="343">
+                                <LocList>
+                                    <Loc EndOffset="3941" SrcFileId="7" StartOffset="3903"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S42" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="344">
+                                <LocList>
+                                    <Loc EndOffset="4022" SrcFileId="7" StartOffset="3978"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S43" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="345">
+                                <LocList>
+                                    <Loc EndOffset="4104" SrcFileId="7" StartOffset="4029"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S44" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="346">
+                                <LocList>
+                                    <Loc EndOffset="4184" SrcFileId="7" StartOffset="4140"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S45" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="347">
+                                <LocList>
+                                    <Loc EndOffset="4224" SrcFileId="7" StartOffset="4191"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S46" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="348">
+                                <LocList>
+                                    <Loc EndOffset="4299" SrcFileId="7" StartOffset="4259"/>
+                                </LocList>
+                            </BasicStmnt>
+                            <BasicStmnt CovItemId="S47" CovItemPrefix="test.CentralinaSerraTest.java" Intrnl_Id="349">
+                                <LocList>
+                                    <Loc EndOffset="4395" SrcFileId="7" StartOffset="4342"/>
+                                </LocList>
+                            </BasicStmnt>
+                        </StmntSeq>
+                    </HierarchyLvl>
+                </HierarchyLvl>
+            </HierarchyLvl>
+        </HierarchyLvl>
+    </MASTRoot>
+    <TestSession Comment="" Date="1752226607042" Name="11 lug 2025, 11:36:46">
+        <TestCase Comment="" Date="1752226606821" Name="test.CentralinaSerraTest:testUmiditaTroppoBassaAccendeIrrigatori">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B10" Value="1"/>
+                    <Cov CovItemId="B11" Value="1"/>
+                    <Cov CovItemId="B14" Value="1"/>
+                    <Cov CovItemId="B27" Value="2"/>
+                    <Cov CovItemId="B4" Value="1"/>
+                    <Cov CovItemId="B6" Value="1"/>
+                    <Cov CovItemId="B8" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L5-2" Value="1"/>
+                    <Cov CovItemId="L6-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S22" Value="1"/>
+                    <Cov CovItemId="S23" Value="2"/>
+                    <Cov CovItemId="S24" Value="1"/>
+                    <Cov CovItemId="S25" Value="2"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S37" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S53" Value="2"/>
+                    <Cov CovItemId="S54" Value="2"/>
+                    <Cov CovItemId="S55" Value="2"/>
+                    <Cov CovItemId="S56" Value="2"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="L5-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S23" Value="1"/>
+                    <Cov CovItemId="S24" Value="1"/>
+                    <Cov CovItemId="S25" Value="1"/>
+                    <Cov CovItemId="S26" Value="2"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C20">
+                        <MapEntry BoolAssgnmnt="11" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C5">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C6">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+                <AssgnmntPrefix RootTermCovItemPrefix="test.CentralinaSerraTest.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C5">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606926" Name="test.CentralinaSerraTest:testLuceInsufficienteAccendeLuci">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B10" Value="1"/>
+                    <Cov CovItemId="B12" Value="1"/>
+                    <Cov CovItemId="B14" Value="1"/>
+                    <Cov CovItemId="B25" Value="3"/>
+                    <Cov CovItemId="B3" Value="1"/>
+                    <Cov CovItemId="B6" Value="1"/>
+                    <Cov CovItemId="B8" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L3-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S13" Value="1"/>
+                    <Cov CovItemId="S14" Value="1"/>
+                    <Cov CovItemId="S15" Value="3"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S28" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S48" Value="3"/>
+                    <Cov CovItemId="S49" Value="3"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S50" Value="3"/>
+                    <Cov CovItemId="S51" Value="3"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="3"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C19">
+                        <MapEntry BoolAssgnmnt="11" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C3">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+                <AssgnmntPrefix RootTermCovItemPrefix="test.CentralinaSerraTest.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606932" Name="test.CentralinaSerraTest:testUmiditaTroppoAltaSpegneIrrigatori">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B10" Value="1"/>
+                    <Cov CovItemId="B12" Value="1"/>
+                    <Cov CovItemId="B13" Value="1"/>
+                    <Cov CovItemId="B27" Value="2"/>
+                    <Cov CovItemId="B4" Value="1"/>
+                    <Cov CovItemId="B6" Value="1"/>
+                    <Cov CovItemId="B8" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L5-2" Value="1"/>
+                    <Cov CovItemId="L6-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S22" Value="1"/>
+                    <Cov CovItemId="S23" Value="2"/>
+                    <Cov CovItemId="S24" Value="1"/>
+                    <Cov CovItemId="S25" Value="2"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S39" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S53" Value="2"/>
+                    <Cov CovItemId="S54" Value="2"/>
+                    <Cov CovItemId="S55" Value="2"/>
+                    <Cov CovItemId="S56" Value="2"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="L4-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S19" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S20" Value="1"/>
+                    <Cov CovItemId="S21" Value="1"/>
+                    <Cov CovItemId="S22" Value="2"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C20">
+                        <MapEntry BoolAssgnmnt="11" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C5">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C6">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+                <AssgnmntPrefix RootTermCovItemPrefix="test.CentralinaSerraTest.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C4">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606937" Name="test.CentralinaSerraTest:testModificheErrate">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B16" Value="2"/>
+                    <Cov CovItemId="B20" Value="1"/>
+                    <Cov CovItemId="B22" Value="1"/>
+                    <Cov CovItemId="B26" Value="1"/>
+                    <Cov CovItemId="B28" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L4-2" Value="1"/>
+                    <Cov CovItemId="L6-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="3"/>
+                    <Cov CovItemId="S16" Value="1"/>
+                    <Cov CovItemId="S17" Value="3"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S20" Value="1"/>
+                    <Cov CovItemId="S21" Value="1"/>
+                    <Cov CovItemId="S24" Value="1"/>
+                    <Cov CovItemId="S25" Value="2"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S40" Value="2"/>
+                    <Cov CovItemId="S43" Value="1"/>
+                    <Cov CovItemId="S45" Value="1"/>
+                    <Cov CovItemId="S48" Value="1"/>
+                    <Cov CovItemId="S49" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S51" Value="1"/>
+                    <Cov CovItemId="S53" Value="1"/>
+                    <Cov CovItemId="S54" Value="1"/>
+                    <Cov CovItemId="S56" Value="1"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S37" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S39" Value="1"/>
+                    <Cov CovItemId="S40" Value="1"/>
+                    <Cov CovItemId="S41" Value="1"/>
+                    <Cov CovItemId="S42" Value="1"/>
+                    <Cov CovItemId="S43" Value="1"/>
+                    <Cov CovItemId="S44" Value="1"/>
+                    <Cov CovItemId="S45" Value="1"/>
+                    <Cov CovItemId="S46" Value="1"/>
+                    <Cov CovItemId="S47" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C14">
+                        <MapEntry BoolAssgnmnt="0" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C16">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C17">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C19">
+                        <MapEntry BoolAssgnmnt="02" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C20">
+                        <MapEntry BoolAssgnmnt="02" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C4">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C6">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606941" Name="test.CentralinaSerraTest:testLuceTroppoAltaSpegneLuci">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B10" Value="1"/>
+                    <Cov CovItemId="B12" Value="1"/>
+                    <Cov CovItemId="B14" Value="1"/>
+                    <Cov CovItemId="B25" Value="3"/>
+                    <Cov CovItemId="B4" Value="1"/>
+                    <Cov CovItemId="B5" Value="1"/>
+                    <Cov CovItemId="B8" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L3-2" Value="1"/>
+                    <Cov CovItemId="L4-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S14" Value="1"/>
+                    <Cov CovItemId="S15" Value="3"/>
+                    <Cov CovItemId="S16" Value="1"/>
+                    <Cov CovItemId="S17" Value="3"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S30" Value="1"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S48" Value="3"/>
+                    <Cov CovItemId="S49" Value="3"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S50" Value="3"/>
+                    <Cov CovItemId="S51" Value="3"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="3"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C19">
+                        <MapEntry BoolAssgnmnt="11" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C3">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C4">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+                <AssgnmntPrefix RootTermCovItemPrefix="test.CentralinaSerraTest.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606943" Name="test.CentralinaSerraTest:testTemperaturaTroppoBassaSpegneVentilatori">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B10" Value="1"/>
+                    <Cov CovItemId="B12" Value="1"/>
+                    <Cov CovItemId="B14" Value="1"/>
+                    <Cov CovItemId="B25" Value="3"/>
+                    <Cov CovItemId="B4" Value="1"/>
+                    <Cov CovItemId="B6" Value="1"/>
+                    <Cov CovItemId="B7" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="L3-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S14" Value="1"/>
+                    <Cov CovItemId="S15" Value="3"/>
+                    <Cov CovItemId="S18" Value="1"/>
+                    <Cov CovItemId="S19" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S20" Value="1"/>
+                    <Cov CovItemId="S21" Value="1"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S32" Value="1"/>
+                    <Cov CovItemId="S33" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S48" Value="3"/>
+                    <Cov CovItemId="S49" Value="3"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S50" Value="3"/>
+                    <Cov CovItemId="S51" Value="3"/>
+                    <Cov CovItemId="S52" Value="1"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="L3-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S14" Value="1"/>
+                    <Cov CovItemId="S15" Value="1"/>
+                    <Cov CovItemId="S16" Value="1"/>
+                    <Cov CovItemId="S17" Value="1"/>
+                    <Cov CovItemId="S18" Value="3"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C19">
+                        <MapEntry BoolAssgnmnt="11" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C3">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+                <AssgnmntPrefix RootTermCovItemPrefix="test.CentralinaSerraTest.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C3">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606946" Name="test.CentralinaSerraTest:testManualeModificaStato">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B15" Value="1"/>
+                    <Cov CovItemId="B17" Value="1"/>
+                    <Cov CovItemId="B19" Value="1"/>
+                    <Cov CovItemId="B2" Value="1"/>
+                    <Cov CovItemId="B21" Value="1"/>
+                    <Cov CovItemId="B23" Value="1"/>
+                    <Cov CovItemId="B25" Value="1"/>
+                    <Cov CovItemId="B27" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S13" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S40" Value="1"/>
+                    <Cov CovItemId="S41" Value="1"/>
+                    <Cov CovItemId="S42" Value="1"/>
+                    <Cov CovItemId="S43" Value="1"/>
+                    <Cov CovItemId="S44" Value="1"/>
+                    <Cov CovItemId="S45" Value="1"/>
+                    <Cov CovItemId="S46" Value="1"/>
+                    <Cov CovItemId="S47" Value="1"/>
+                    <Cov CovItemId="S48" Value="1"/>
+                    <Cov CovItemId="S49" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S50" Value="1"/>
+                    <Cov CovItemId="S51" Value="1"/>
+                    <Cov CovItemId="S52" Value="1"/>
+                    <Cov CovItemId="S53" Value="1"/>
+                    <Cov CovItemId="S54" Value="1"/>
+                    <Cov CovItemId="S55" Value="1"/>
+                    <Cov CovItemId="S56" Value="1"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S28" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S30" Value="1"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S32" Value="1"/>
+                    <Cov CovItemId="S33" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S35" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C14">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C15">
+                        <MapEntry BoolAssgnmnt="11" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C16">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C17">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="4" RootTermCovItemId="C18">
+                        <MapEntry BoolAssgnmnt="1111" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C19">
+                        <MapEntry BoolAssgnmnt="11" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="2" RootTermCovItemId="C20">
+                        <MapEntry BoolAssgnmnt="11" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <TestCase Comment="" Date="1752226606952" Name="test.CentralinaSerraTest:testTemperaturaTroppoAltaAccendeVentilatori">
+            <CovList>
+                <CovPrefix CovItemPrefix="main.CentralinaSerra.java">
+                    <Cov CovItemId="B1" Value="1"/>
+                    <Cov CovItemId="B12" Value="1"/>
+                    <Cov CovItemId="B14" Value="1"/>
+                    <Cov CovItemId="B4" Value="1"/>
+                    <Cov CovItemId="B6" Value="1"/>
+                    <Cov CovItemId="B8" Value="1"/>
+                    <Cov CovItemId="B9" Value="1"/>
+                    <Cov CovItemId="L1-2" Value="1"/>
+                    <Cov CovItemId="L2-2" Value="1"/>
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S18" Value="1"/>
+                    <Cov CovItemId="S19" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S26" Value="1"/>
+                    <Cov CovItemId="S27" Value="1"/>
+                    <Cov CovItemId="S29" Value="1"/>
+                    <Cov CovItemId="S3" Value="3"/>
+                    <Cov CovItemId="S31" Value="1"/>
+                    <Cov CovItemId="S34" Value="1"/>
+                    <Cov CovItemId="S35" Value="1"/>
+                    <Cov CovItemId="S36" Value="1"/>
+                    <Cov CovItemId="S38" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S52" Value="2"/>
+                    <Cov CovItemId="S6" Value="2"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="main.SerraSmartController.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S10" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                    <Cov CovItemId="S3" Value="1"/>
+                    <Cov CovItemId="S4" Value="1"/>
+                    <Cov CovItemId="S5" Value="1"/>
+                    <Cov CovItemId="S6" Value="1"/>
+                    <Cov CovItemId="S7" Value="1"/>
+                    <Cov CovItemId="S8" Value="1"/>
+                    <Cov CovItemId="S9" Value="1"/>
+                </CovPrefix>
+                <CovPrefix CovItemPrefix="test.CentralinaSerraTest.java">
+                    <Cov CovItemId="S1" Value="1"/>
+                    <Cov CovItemId="S11" Value="1"/>
+                    <Cov CovItemId="S12" Value="1"/>
+                    <Cov CovItemId="S13" Value="1"/>
+                    <Cov CovItemId="S2" Value="1"/>
+                </CovPrefix>
+            </CovList>
+            <AssgnmntList>
+                <AssgnmntPrefix RootTermCovItemPrefix="main.CentralinaSerra.java">
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C1">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="3"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C10">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C11">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C12">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C13">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C2">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                        <MapEntry BoolAssgnmnt="1" Value="2"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C7">
+                        <MapEntry BoolAssgnmnt="1" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C8">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                    <AssgnmntListEntry Length="1" RootTermCovItemId="C9">
+                        <MapEntry BoolAssgnmnt="0" Value="1"/>
+                    </AssgnmntListEntry>
+                </AssgnmntPrefix>
+            </AssgnmntList>
+            <ObjMetaDataList/>
+            <MetaDataList/>
+        </TestCase>
+        <MetaDataList/>
+    </TestSession>
+</TestSessionContainer>

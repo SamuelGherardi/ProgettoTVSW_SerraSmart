@@ -1,6 +1,6 @@
 package main;
 
-//Enumerativo che rappresenta lo stato in cui può essere una luce
+//Enumerativo che rappresenta lo stato in cui puÃ² essere una luce
 public enum StatoLuce {
 	ON,
 	OFF

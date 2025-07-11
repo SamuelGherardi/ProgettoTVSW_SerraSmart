@@ -1,6 +1,6 @@
 package main;
 
-//Enumerativo che rappresenta lo stato in cui può essere un ventilatore
+//Enumerativo che rappresenta lo stato in cui puÃ² essere un ventilatore
 public enum StatoVentilatore {
 	ACCESO,
 	SPENTO
