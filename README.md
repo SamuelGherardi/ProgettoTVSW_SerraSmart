@@ -14,6 +14,7 @@ Progetto universitario per il corso di Testing e Verifica del Software (Unibg).
 - `/Java/` – Implementazione e simulazione in Java
 - `/Test/` – Test automatici
 - `/Documentazione/` – Report finale
+- `/.github/` – File .yaml per Continuous Integration
 
 ## Autore
 Samuel Gherardi
