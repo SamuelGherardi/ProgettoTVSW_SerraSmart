@@ -25,10 +25,10 @@ jobs:
           https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.0/junit-platform-console-standalone-1.10.0.jar
 
       - name: Compile source code
-        run: javac -d out -cp lib/junit-platform-console-standalone.jar $(find src/main -name "*.java")
+        run: javac -d out -cp lib/junit-platform-console-standalone.jar $(find Java/SerraSmartJava/src/main -name "*.java")
 
       - name: Compile test code
-        run: javac -d out -cp "lib/junit-platform-console-standalone.jar:out" $(find src/test -name "*.java")
+        run: javac -d out -cp "lib/junit-platform-console-standalone.jar:out" $(find Java/SerraSmartJava/src/test -name "*.java")
 
       - name: Run JUnit tests
         run: |
