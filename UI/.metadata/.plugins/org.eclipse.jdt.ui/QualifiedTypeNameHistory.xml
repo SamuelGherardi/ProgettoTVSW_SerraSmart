@@ -3,4 +3,5 @@
     <fullyQualifiedTypeName name="com.vaadin.flow.component.Html"/>
     <fullyQualifiedTypeName name="com.vaadin.flow.component.html.Label"/>
     <fullyQualifiedTypeName name="com.vaadin.flow.component.html.NativeLabel"/>
+    <fullyQualifiedTypeName name="com.vaadin.flow.component.icon.VaadinIcon"/>
 </qualifiedTypeNameHistroy>

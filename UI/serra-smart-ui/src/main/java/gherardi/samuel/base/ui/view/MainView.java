@@ -4,10 +4,13 @@ import gherardi.samuel.base.ui.component.ViewToolbar;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.Route;
@@ -25,9 +28,10 @@ public final class MainView extends VerticalLayout {
 
     private final NativeLabel titolo = new NativeLabel("Dashboard Serra Smart");
     private final NativeLabel statoModalita = new NativeLabel();
-    private final NativeLabel statoLuci = new NativeLabel();
-    private final NativeLabel statoVentilatori = new NativeLabel();
-    private final NativeLabel statoIrrigatori = new NativeLabel();
+    private final HorizontalLayout luciBadgeLayout = new HorizontalLayout();
+    private final HorizontalLayout ventilatoriBadgeLayout = new HorizontalLayout();
+    private final HorizontalLayout irrigatoriBadgeLayout = new HorizontalLayout();
+
     private final NativeLabel datiSimulati = new NativeLabel();
     
     private final NumberField luceMin = new NumberField("Soglia luce min");
@@ -40,6 +44,25 @@ public final class MainView extends VerticalLayout {
 
     private final VerticalLayout editorSoglie = new VerticalLayout(); // contenitore visibile solo in modalità AUTOMATICA
 
+ // Layout per i controlli manuali
+    private final VerticalLayout manualControls = new VerticalLayout();
+
+    // LUCI
+    private final NumberField luceIndex = new NumberField("Indice luce (0–4)");
+    private final Button accendiLuce = new Button("Accendi luce");
+    private final Button spegniLuce = new Button("Spegni luce");
+
+    // VENTILATORI
+    private final ComboBox<Ventilatore> ventilatoreSelect = new ComboBox<>("Ventilatore");
+    private final Button accendiVentilatore = new Button("Accendi ventilatore");
+    private final Button spegniVentilatore = new Button("Spegni ventilatore");
+
+    // IRRIGATORI
+    private final NumberField irrigatoreIndex = new NumberField("Indice irrigatore (0–2)");
+    private final NumberField livelloIrrigatore = new NumberField("Livello apertura (0–100)");
+    private final Button impostaIrrigatore = new Button("Imposta irrigatore");
+
+    
     
     public MainView() {
         setPadding(true);
@@ -74,6 +97,8 @@ public final class MainView extends VerticalLayout {
                 centralina.setModalita(Modalita.AUTOMATICA);
             }
             editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA);
+            manualControls.setVisible(centralina.getModalita() == Modalita.MANUALE);
+            
             aggiornaStatoUI();
         });
 
@@ -88,6 +113,14 @@ public final class MainView extends VerticalLayout {
         	
             centralina.aggiornaSensori(temperatura, umidita, lux); // valori casuali
             datiSimulati.setText("Dati simulati: " + temperatura + "°C | " + umidita + "% | " + lux + "lx");
+            
+            
+            datiSimulati.getStyle()
+            .set("font-weight", "bold")
+            .set("margin-top", "10px")
+            .set("color", "#2b6777");
+
+            
             aggiornaStatoUI();
         });
         
@@ -129,52 +162,205 @@ public final class MainView extends VerticalLayout {
                 datiSimulati.setText("❌ Errore: inserisci tutti i valori.");
             }
         });
+        
+        // Colonna LUCE
+        VerticalLayout luceColonna = new VerticalLayout(
+            new NativeLabel("Soglie Luce"),
+            luceMin, luceMax
+        );
 
-        editorSoglie.add(luceMin, luceMax, tempMin, tempMax, umidMin, umidMax, aggiornaSoglie);
+        // Colonna TEMPERATURA
+        VerticalLayout tempColonna = new VerticalLayout(
+            new NativeLabel("Soglie Temperatura"),
+            tempMin, tempMax
+        );
+
+        // Colonna UMIDITÀ
+        VerticalLayout umidColonna = new VerticalLayout(
+            new NativeLabel("Soglie Umidità"),
+            umidMin, umidMax
+        );
+
+        // Raggruppamento orizzontale
+        HorizontalLayout soglieRow = new HorizontalLayout(luceColonna, tempColonna, umidColonna);
+        soglieRow.setSpacing(true);
+
+        // Aggiunta finale
+        editorSoglie.add(new H2("Configurazione Soglie"), soglieRow, aggiornaSoglie);
         editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA); // visibile solo in AUTOMATICA
         
+     // Configura valori possibili
+        luceIndex.setMin(0); luceIndex.setMax(4); luceIndex.setStep(1);
+        irrigatoreIndex.setMin(0); irrigatoreIndex.setMax(2); irrigatoreIndex.setStep(1);
+        livelloIrrigatore.setMin(0); livelloIrrigatore.setMax(100); livelloIrrigatore.setStep(1);
+        ventilatoreSelect.setItems(Ventilatore.values());
+
+        // Azioni LUCI
+        accendiLuce.addClickListener(e -> {
+            if (luceIndex.getValue() != null) {
+                centralina.setLuce(luceIndex.getValue().intValue(), StatoLuce.ON);
+                aggiornaStatoUI();
+            }
+        });
+        spegniLuce.addClickListener(e -> {
+            if (luceIndex.getValue() != null) {
+                centralina.setLuce(luceIndex.getValue().intValue(), StatoLuce.OFF);
+                aggiornaStatoUI();
+            }
+        });
+
+        // Azioni VENTILATORI
+        accendiVentilatore.addClickListener(e -> {
+            if (ventilatoreSelect.getValue() != null) {
+                centralina.setVentilatore(ventilatoreSelect.getValue(), StatoVentilatore.ACCESO);
+                aggiornaStatoUI();
+            }
+        });
+        spegniVentilatore.addClickListener(e -> {
+            if (ventilatoreSelect.getValue() != null) {
+                centralina.setVentilatore(ventilatoreSelect.getValue(), StatoVentilatore.SPENTO);
+                aggiornaStatoUI();
+            }
+        });
+
+        // Azione IRRIGATORI
+        impostaIrrigatore.addClickListener(e -> {
+            if (irrigatoreIndex.getValue() != null && livelloIrrigatore.getValue() != null) {
+                centralina.setIrrigatore(irrigatoreIndex.getValue().intValue(), livelloIrrigatore.getValue().intValue());
+                aggiornaStatoUI();
+            }
+        });
+
+        // Costruisci layout manuale
+        // Sezione LUCI
+        VerticalLayout luciColonna = new VerticalLayout(
+            new NativeLabel("Luci"),
+            luceIndex, accendiLuce, spegniLuce
+        );
+
+        // Sezione VENTILATORI
+        VerticalLayout ventColonna = new VerticalLayout(
+            new NativeLabel("Ventilatori"),
+            ventilatoreSelect, accendiVentilatore, spegniVentilatore
+        );
+
+        // Sezione IRRIGATORI
+        VerticalLayout irrigatoriColonna = new VerticalLayout(
+            new NativeLabel("Irrigatori"),
+            irrigatoreIndex, livelloIrrigatore, impostaIrrigatore
+        );
+
+        // Contenitore orizzontale
+        HorizontalLayout controlliManuali = new HorizontalLayout(luciColonna, ventColonna, irrigatoriColonna);
+        manualControls.add(new H2("Controllo Manuale"), controlliManuali);
+        
+        
+
+        // Mostra solo se modalità MANUALE
+        manualControls.setVisible(centralina.getModalita() == Modalita.MANUALE);
+        
+        
+        // Stile grafico pannello Configurazione Soglie
+        editorSoglie.getStyle()
+            .set("border", "1px solid #ccc")
+            .set("padding", "20px")
+            .set("border-radius", "10px")
+            .set("background-color", "#f9f9f9")
+            .set("max-width", "900px");
+        
+        // Stile grafico pannello Controllo Manuale
+        manualControls.getStyle()
+            .set("border", "1px solid #ccc")
+            .set("padding", "20px")
+            .set("border-radius", "10px")
+            .set("background-color", "#f9f9f9")
+            .set("max-width", "900px");
+
+        // Centra tutto all’interno della pagina
+        this.setWidthFull();
+        this.setAlignItems(Alignment.CENTER);
 
         
         // 🧾 Layout e contenuti
         //add(new H2("Serra Smart"), statoModalita, statoLuci, statoVentilatori, toggleModalita, simula);
         H2 header = new H2("Serra Smart");
 
-        add(header);
+        //add(header);
         add(statoModalita);
-        add(statoLuci);
-        add(statoVentilatori);
-        add(statoIrrigatori);
+        add(luciBadgeLayout);
+        add(ventilatoriBadgeLayout);
+        add(irrigatoriBadgeLayout);
         add(toggleModalita);
         add(simula);
         add(datiSimulati);
         add(editorSoglie);
+        add(manualControls);
         aggiornaStatoUI();
     }
 
     private void aggiornaStatoUI() {
+    	
         statoModalita.setText("Modalità attuale: " + centralina.getModalita());
 
-        StringBuilder luci = new StringBuilder("Luci: ");
+        // 🔵 LUCI
+        luciBadgeLayout.removeAll();
+        Span labelLuci = new Span("LUCI:");
+        labelLuci.getStyle().set("font-weight", "bold").set("margin-right", "8px");
+        luciBadgeLayout.add(labelLuci);
         for (int i = 0; i < 5; i++) {
-            luci.append("L").append(i).append("=").append(centralina.getStatoLuce(i)).append(" ");
+            StatoLuce stato = centralina.getStatoLuce(i);
+            Span badge = new Span("L" + i + ": " + stato);
+            badge.getElement().getThemeList().add("badge");
+            badge.getStyle().set("margin-right", "6px");
+            if (stato == StatoLuce.ON) {
+                badge.getElement().getThemeList().add("badge success");
+            } else {
+                badge.getElement().getThemeList().add("badge contrast");
+            }
+            luciBadgeLayout.add(badge);
         }
-        statoLuci.setText(luci.toString());
 
-        StringBuilder vent = new StringBuilder("Ventilatori: ");
+        // 🔴 VENTILATORI
+        ventilatoriBadgeLayout.removeAll();
+        Span labelVent = new Span("VENTILATORI:");
+        labelVent.getStyle().set("font-weight", "bold").set("margin-right", "8px");
+        ventilatoriBadgeLayout.add(labelVent);
         for (Ventilatore v : Ventilatore.values()) {
-            vent.append(v.name()).append("=").append(centralina.getStatoVentilatore(v)).append(" ");
+            StatoVentilatore stato = centralina.getStatoVentilatore(v);
+            Span badge = new Span(v.name() + ": " + stato);
+            badge.getElement().getThemeList().add("badge");
+            badge.getStyle().set("margin-right", "6px");
+            if (stato == StatoVentilatore.ACCESO) {
+                badge.getElement().getThemeList().add("badge error");
+            } else {
+                badge.getElement().getThemeList().add("badge contrast");
+            }
+            ventilatoriBadgeLayout.add(badge);
         }
-        statoVentilatori.setText(vent.toString());
-        
-        StringBuilder irr = new StringBuilder("Irrigatori: ");
-        for (int i=0; i<3; i++) {
-        	irr.append("I").append(i).append("=").append(centralina.getLivelloIrrigatore(i)).append("% ");
+
+        // 🟢 IRRIGATORI
+        irrigatoriBadgeLayout.removeAll();
+        Span labelIrr = new Span("IRRIGATORI:");
+        labelIrr.getStyle().set("font-weight", "bold").set("margin-right", "8px");
+        irrigatoriBadgeLayout.add(labelIrr);
+        for (int i = 0; i < 3; i++) {
+            int livello = centralina.getLivelloIrrigatore(i);
+            Span badge = new Span("I" + i + ": " + livello + "%");
+            badge.getElement().getThemeList().add("badge");
+            badge.getStyle().set("margin-right", "6px");
+            if (livello == 0) {
+                badge.getElement().getThemeList().add("badge contrast");
+            } else if (livello < 50) {
+                badge.getElement().getThemeList().add("badge");
+            } else {
+                badge.getElement().getThemeList().add("badge success");
+            }
+            irrigatoriBadgeLayout.add(badge);
         }
-        statoIrrigatori.setText(irr.toString());
-        
-        //Mostra/nascondi editor soglie in base alla modalità
+
         editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA);
     }
+    
 	
 	
 }

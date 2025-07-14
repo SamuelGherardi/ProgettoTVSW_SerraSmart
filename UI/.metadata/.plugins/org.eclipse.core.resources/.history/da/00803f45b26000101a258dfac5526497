@@ -1,0 +1,299 @@
+package gherardi.samuel.base.ui.view;
+
+import gherardi.samuel.base.ui.component.ViewToolbar;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
+import gherardi.samuel.logic.*;
+/**
+ * This view shows up when a user navigates to the root ('/') of the application.
+ */
+@Route
+@PermitAll // When security is enabled, allow all authenticated users
+public final class MainView extends VerticalLayout {
+
+    private final CentralinaSerra centralina;
+
+    private final NativeLabel titolo = new NativeLabel("Dashboard Serra Smart");
+    private final NativeLabel statoModalita = new NativeLabel();
+    private final NativeLabel statoLuci = new NativeLabel();
+    private final NativeLabel statoVentilatori = new NativeLabel();
+    private final NativeLabel statoIrrigatori = new NativeLabel();
+    private final NativeLabel datiSimulati = new NativeLabel();
+    
+    private final NumberField luceMin = new NumberField("Soglia luce min");
+    private final NumberField luceMax = new NumberField("Soglia luce max");
+    private final NumberField tempMin = new NumberField("Soglia temperatura min");
+    private final NumberField tempMax = new NumberField("Soglia temperatura max");
+    private final NumberField umidMin = new NumberField("Soglia umidità min");
+    private final NumberField umidMax = new NumberField("Soglia umidità max");
+    private final Button aggiornaSoglie = new Button("Aggiorna soglie");
+
+    private final VerticalLayout editorSoglie = new VerticalLayout(); // contenitore visibile solo in modalità AUTOMATICA
+
+ // Layout per i controlli manuali
+    private final VerticalLayout manualControls = new VerticalLayout();
+
+    // LUCI
+    private final NumberField luceIndex = new NumberField("Indice luce (0–4)");
+    private final Button accendiLuce = new Button("Accendi luce");
+    private final Button spegniLuce = new Button("Spegni luce");
+
+    // VENTILATORI
+    private final ComboBox<Ventilatore> ventilatoreSelect = new ComboBox<>("Ventilatore");
+    private final Button accendiVentilatore = new Button("Accendi ventilatore");
+    private final Button spegniVentilatore = new Button("Spegni ventilatore");
+
+    // IRRIGATORI
+    private final NumberField irrigatoreIndex = new NumberField("Indice irrigatore (0–2)");
+    private final NumberField livelloIrrigatore = new NumberField("Livello apertura (0–100)");
+    private final Button impostaIrrigatore = new Button("Imposta irrigatore");
+
+    
+    
+    public MainView() {
+        setPadding(true);
+        setSpacing(true);
+        setDefaultHorizontalComponentAlignment(Alignment.START);
+
+        // 🔧 Istanzia controller e centralina
+        SerraSmartController controller = new SerraSmartController(200, 800, 15, 30, 30, 70);
+        centralina = new CentralinaSerra(5, 3, controller, Modalita.AUTOMATICA);
+        
+        luceMin.setValue((double) controller.getSogliaLuceMin());
+        luceMax.setValue((double) controller.getSogliaLuceMax());
+        tempMin.setValue((double) controller.getSogliaTempMin());
+        tempMax.setValue((double) controller.getSogliaTempMax());
+        umidMin.setValue((double) controller.getSogliaUmiditaMin());
+        umidMax.setValue((double) controller.getSogliaUmiditaMax());
+
+        luceMin.setMin(0); luceMin.setMax(1000);
+        luceMax.setMin(0); luceMax.setMax(1000);
+        tempMin.setMin(0); tempMin.setMax(100);
+        tempMax.setMin(0); tempMax.setMax(100);
+        umidMin.setMin(0); umidMin.setMax(100);
+        umidMax.setMin(0); umidMax.setMax(100);
+
+        
+        // 🟢 Pulsante: cambia modalità
+        Button toggleModalita = new Button("Cambia modalità");
+        toggleModalita.addClickListener(e -> {
+            if (centralina.getModalita() == Modalita.AUTOMATICA) {
+                centralina.setModalita(Modalita.MANUALE);
+            } else {
+                centralina.setModalita(Modalita.AUTOMATICA);
+            }
+            editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA);
+            manualControls.setVisible(centralina.getModalita() == Modalita.MANUALE);
+            
+            aggiornaStatoUI();
+        });
+
+        // 🔄 Pulsante: simula nuovi dati sensore
+        Button simula = new Button("Simula dati casuali");
+        simula.addClickListener(e -> {
+        	// Genera valori random
+            int temperatura = (int) (Math.random() * 36 + 5); // 5-40 °C
+            int umidita = (int) (Math.random() * 101);        // 0-100 %
+            int lux = (int) (Math.random() * 1001);           // 0-1000 lux
+        	
+        	
+            centralina.aggiornaSensori(temperatura, umidita, lux); // valori casuali
+            datiSimulati.setText("Dati simulati: " + temperatura + "°C | " + umidita + "% | " + lux + "lx");
+            aggiornaStatoUI();
+        });
+        
+        aggiornaSoglie.addClickListener(e -> {
+        	try {
+                int lMin = luceMin.getValue().intValue();
+                int lMax = luceMax.getValue().intValue();
+                int tMin = tempMin.getValue().intValue();
+                int tMax = tempMax.getValue().intValue();
+                int uMin = umidMin.getValue().intValue();
+                int uMax = umidMax.getValue().intValue();
+
+                // ✅ Controlli manuali
+                if (lMin < 0 || lMax > 1000 || lMin > lMax) {
+                    datiSimulati.setText("❌ Errore: soglie luce non valide.");
+                    return;
+                }
+                if (tMin < 0 || tMax > 100 || tMin > tMax) {
+                    datiSimulati.setText("❌ Errore: soglie temperatura non valide.");
+                    return;
+                }
+                if (uMin < 0 || uMax > 100 || uMin > uMax) {
+                    datiSimulati.setText("❌ Errore: soglie umidità non valide.");
+                    return;
+                }
+
+                // ✅ Se tutto è valido, aggiorna
+                controller.setSogliaLuceMin(lMin);
+                controller.setSogliaLuceMax(lMax);
+                controller.setSogliaTempMin(tMin);
+                controller.setSogliaTempMax(tMax);
+                controller.setSogliaUmiditaMin(uMin);
+                controller.setSogliaUmiditaMax(uMax);
+
+                datiSimulati.setText("✅ Soglie aggiornate correttamente.");
+                aggiornaStatoUI();
+
+            } catch (Exception ex) {
+                datiSimulati.setText("❌ Errore: inserisci tutti i valori.");
+            }
+        });
+
+        //editorSoglie.add(luceMin, luceMax, tempMin, tempMax, umidMin, umidMax, aggiornaSoglie);
+        // Colonna LUCE
+        VerticalLayout luceColonna = new VerticalLayout(
+            new NativeLabel("Soglie Luce"),
+            luceMin, luceMax
+        );
+
+        // Colonna TEMPERATURA
+        VerticalLayout tempColonna = new VerticalLayout(
+            new NativeLabel("Soglie Temperatura"),
+            tempMin, tempMax
+        );
+
+        // Colonna UMIDITÀ
+        VerticalLayout umidColonna = new VerticalLayout(
+            new NativeLabel("Soglie Umidità"),
+            umidMin, umidMax
+        );
+
+        // Raggruppamento orizzontale
+        HorizontalLayout soglieRow = new HorizontalLayout(luceColonna, tempColonna, umidColonna);
+        soglieRow.setSpacing(true);
+
+        // Aggiunta finale
+        editorSoglie.add(new H2("Configurazione Soglie"), soglieRow, aggiornaSoglie);
+        editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA); // visibile solo in AUTOMATICA
+        
+     // Configura valori possibili
+        luceIndex.setMin(0); luceIndex.setMax(4); luceIndex.setStep(1);
+        irrigatoreIndex.setMin(0); irrigatoreIndex.setMax(2); irrigatoreIndex.setStep(1);
+        livelloIrrigatore.setMin(0); livelloIrrigatore.setMax(100); livelloIrrigatore.setStep(1);
+        ventilatoreSelect.setItems(Ventilatore.values());
+
+        // Azioni LUCI
+        accendiLuce.addClickListener(e -> {
+            if (luceIndex.getValue() != null) {
+                centralina.setLuce(luceIndex.getValue().intValue(), StatoLuce.ON);
+                aggiornaStatoUI();
+            }
+        });
+        spegniLuce.addClickListener(e -> {
+            if (luceIndex.getValue() != null) {
+                centralina.setLuce(luceIndex.getValue().intValue(), StatoLuce.OFF);
+                aggiornaStatoUI();
+            }
+        });
+
+        // Azioni VENTILATORI
+        accendiVentilatore.addClickListener(e -> {
+            if (ventilatoreSelect.getValue() != null) {
+                centralina.setVentilatore(ventilatoreSelect.getValue(), StatoVentilatore.ACCESO);
+                aggiornaStatoUI();
+            }
+        });
+        spegniVentilatore.addClickListener(e -> {
+            if (ventilatoreSelect.getValue() != null) {
+                centralina.setVentilatore(ventilatoreSelect.getValue(), StatoVentilatore.SPENTO);
+                aggiornaStatoUI();
+            }
+        });
+
+        // Azione IRRIGATORI
+        impostaIrrigatore.addClickListener(e -> {
+            if (irrigatoreIndex.getValue() != null && livelloIrrigatore.getValue() != null) {
+                centralina.setIrrigatore(irrigatoreIndex.getValue().intValue(), livelloIrrigatore.getValue().intValue());
+                aggiornaStatoUI();
+            }
+        });
+
+        // Costruisci layout manuale
+        // Sezione LUCI
+        VerticalLayout luciColonna = new VerticalLayout(
+            new NativeLabel("Luci"),
+            luceIndex, accendiLuce, spegniLuce
+        );
+
+        // Sezione VENTILATORI
+        VerticalLayout ventColonna = new VerticalLayout(
+            new NativeLabel("Ventilatori"),
+            ventilatoreSelect, accendiVentilatore, spegniVentilatore
+        );
+
+        // Sezione IRRIGATORI
+        VerticalLayout irrigatoriColonna = new VerticalLayout(
+            new NativeLabel("Irrigatori"),
+            irrigatoreIndex, livelloIrrigatore, impostaIrrigatore
+        );
+
+        // Contenitore orizzontale
+        HorizontalLayout controlliManuali = new HorizontalLayout(luciColonna, ventColonna, irrigatoriColonna);
+        manualControls.add(new H2("Controllo Manuale"), controlliManuali);
+        
+        
+
+        // Mostra solo se modalità MANUALE
+        manualControls.setVisible(centralina.getModalita() == Modalita.MANUALE);
+        
+
+
+        
+        // 🧾 Layout e contenuti
+        //add(new H2("Serra Smart"), statoModalita, statoLuci, statoVentilatori, toggleModalita, simula);
+        H2 header = new H2("Serra Smart");
+
+        add(header);
+        add(statoModalita);
+        add(statoLuci);
+        add(statoVentilatori);
+        add(statoIrrigatori);
+        add(toggleModalita);
+        add(simula);
+        add(datiSimulati);
+        add(editorSoglie);
+        add(manualControls);
+        aggiornaStatoUI();
+    }
+
+    private void aggiornaStatoUI() {
+        statoModalita.setText("Modalità attuale: " + centralina.getModalita());
+
+        StringBuilder luci = new StringBuilder("Luci: ");
+        for (int i = 0; i < 5; i++) {
+            luci.append("L").append(i).append("=").append(centralina.getStatoLuce(i)).append(" ");
+        }
+        statoLuci.setText(luci.toString());
+
+        StringBuilder vent = new StringBuilder("Ventilatori: ");
+        for (Ventilatore v : Ventilatore.values()) {
+            vent.append(v.name()).append("=").append(centralina.getStatoVentilatore(v)).append(" ");
+        }
+        statoVentilatori.setText(vent.toString());
+        
+        StringBuilder irr = new StringBuilder("Irrigatori: ");
+        for (int i=0; i<3; i++) {
+        	irr.append("I").append(i).append("=").append(centralina.getLivelloIrrigatore(i)).append("% ");
+        }
+        statoIrrigatori.setText(irr.toString());
+        
+        //Mostra/nascondi editor soglie in base alla modalità
+        editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA);
+    }
+	
+	
+}
