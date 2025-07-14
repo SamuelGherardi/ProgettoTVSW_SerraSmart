@@ -1,0 +1,148 @@
+package gherardi.samuel.base.ui.view;
+
+import gherardi.samuel.base.ui.component.ViewToolbar;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
+import gherardi.samuel.logic.*;
+/**
+ * This view shows up when a user navigates to the root ('/') of the application.
+ */
+@Route
+@PermitAll // When security is enabled, allow all authenticated users
+public final class MainView extends VerticalLayout {
+
+    private final CentralinaSerra centralina;
+
+    private final NativeLabel titolo = new NativeLabel("Dashboard Serra Smart");
+    private final NativeLabel statoModalita = new NativeLabel();
+    private final NativeLabel statoLuci = new NativeLabel();
+    private final NativeLabel statoVentilatori = new NativeLabel();
+    private final NativeLabel statoIrrigatori = new NativeLabel();
+    private final NativeLabel datiSimulati = new NativeLabel();
+    
+    private final NumberField luceMin = new NumberField("Soglia luce min");
+    private final NumberField luceMax = new NumberField("Soglia luce max");
+    private final NumberField tempMin = new NumberField("Soglia temperatura min");
+    private final NumberField tempMax = new NumberField("Soglia temperatura max");
+    private final NumberField umidMin = new NumberField("Soglia umidità min");
+    private final NumberField umidMax = new NumberField("Soglia umidità max");
+    private final Button aggiornaSoglie = new Button("Aggiorna soglie");
+
+    private final VerticalLayout editorSoglie = new VerticalLayout(); // contenitore visibile solo in modalità AUTOMATICA
+
+    
+    public MainView() {
+        setPadding(true);
+        setSpacing(true);
+        setDefaultHorizontalComponentAlignment(Alignment.START);
+
+        // 🔧 Istanzia controller e centralina
+        SerraSmartController controller = new SerraSmartController(200, 800, 15, 30, 30, 70);
+        centralina = new CentralinaSerra(5, 3, controller, Modalita.AUTOMATICA);
+        
+        luceMin.setValue((double) controller.getSogliaLuceMin());
+        luceMax.setValue((double) controller.getSogliaLuceMax());
+        tempMin.setValue((double) controller.getSogliaTempMin());
+        tempMax.setValue((double) controller.getSogliaTempMax());
+        umidMin.setValue((double) controller.getSogliaUmiditaMin());
+        umidMax.setValue((double) controller.getSogliaUmiditaMax());
+
+        luceMin.setMin(0); luceMin.setMax(1000);
+        luceMax.setMin(0); luceMax.setMax(1000);
+        tempMin.setMin(0); tempMin.setMax(100);
+        tempMax.setMin(0); tempMax.setMax(100);
+        umidMin.setMin(0); umidMin.setMax(100);
+        umidMax.setMin(0); umidMax.setMax(100);
+
+        
+        // 🟢 Pulsante: cambia modalità
+        Button toggleModalita = new Button("Cambia modalità");
+        toggleModalita.addClickListener(e -> {
+            if (centralina.getModalita() == Modalita.AUTOMATICA) {
+                centralina.setModalita(Modalita.MANUALE);
+            } else {
+                centralina.setModalita(Modalita.AUTOMATICA);
+            }
+            editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA);
+            aggiornaStatoUI();
+        });
+
+        // 🔄 Pulsante: simula nuovi dati sensore
+        Button simula = new Button("Simula dati casuali");
+        simula.addClickListener(e -> {
+        	// Genera valori random
+            int temperatura = (int) (Math.random() * 36 + 5); // 5-40 °C
+            int umidita = (int) (Math.random() * 101);        // 0-100 %
+            int lux = (int) (Math.random() * 1001);           // 0-1000 lux
+        	
+        	
+            centralina.aggiornaSensori(temperatura, umidita, lux); // valori casuali
+            datiSimulati.setText("Dati simulati: " + temperatura + "°C | " + umidita + "% | " + lux + "lx");
+            aggiornaStatoUI();
+        });
+        
+        aggiornaSoglie.addClickListener(e -> {
+            controller.setSogliaLuceMin(luceMin.getValue().intValue());
+            controller.setSogliaLuceMax(luceMax.getValue().intValue());
+            controller.setSogliaTempMin(tempMin.getValue().intValue());
+            controller.setSogliaTempMax(tempMax.getValue().intValue());
+            controller.setSogliaUmiditaMin(umidMin.getValue().intValue());
+            controller.setSogliaUmiditaMax(umidMax.getValue().intValue());
+            datiSimulati.setText("✅ Soglie aggiornate correttamente.");
+        });
+
+        editorSoglie.add(luceMin, luceMax, tempMin, tempMax, umidMin, umidMax, aggiornaSoglie);
+        editorSoglie.setVisible(centralina.getModalita() == Modalita.AUTOMATICA); // visibile solo in AUTOMATICA
+        add(editorSoglie);
+
+        
+        // 🧾 Layout e contenuti
+        //add(new H2("Serra Smart"), statoModalita, statoLuci, statoVentilatori, toggleModalita, simula);
+        H2 header = new H2("Serra Smart");
+
+        add(header);
+        add(statoModalita);
+        add(statoLuci);
+        add(statoVentilatori);
+        add(statoIrrigatori);
+        add(toggleModalita);
+        add(simula);
+        add(datiSimulati);
+        
+        aggiornaStatoUI();
+    }
+
+    private void aggiornaStatoUI() {
+        statoModalita.setText("Modalità attuale: " + centralina.getModalita());
+
+        StringBuilder luci = new StringBuilder("Luci: ");
+        for (int i = 0; i < 5; i++) {
+            luci.append("L").append(i).append("=").append(centralina.getStatoLuce(i)).append(" ");
+        }
+        statoLuci.setText(luci.toString());
+
+        StringBuilder vent = new StringBuilder("Ventilatori: ");
+        for (Ventilatore v : Ventilatore.values()) {
+            vent.append(v.name()).append("=").append(centralina.getStatoVentilatore(v)).append(" ");
+        }
+        statoVentilatori.setText(vent.toString());
+        
+        StringBuilder irr = new StringBuilder("Irrigatori: ");
+        for (int i=0; i<3; i++) {
+        	irr.append("I").append(i).append("=").append(centralina.getLivelloIrrigatore(i)).append("% ");
+        }
+        statoIrrigatori.setText(irr.toString());
+    }
+	
+	
+}

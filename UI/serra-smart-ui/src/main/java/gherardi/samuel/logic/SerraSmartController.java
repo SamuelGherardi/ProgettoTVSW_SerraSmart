@@ -157,4 +157,34 @@ public class SerraSmartController {
     public void setSogliaUmiditaMax(int u) {
         sogliaUmiditaMax = u;
     }
+    
+    public int getSogliaLuceMin() {
+        return sogliaLuceMin;
+    }
+    
+
+    public int getSogliaLuceMax() {
+        return sogliaLuceMax;
+    }
+    
+
+    public int getSogliaTempMin() {
+        return sogliaTempMin;
+    }
+    
+
+    public int getSogliaTempMax() {
+        return sogliaTempMax;
+    }
+
+
+    public int getSogliaUmiditaMin() {
+        return sogliaUmiditaMin;
+    }
+    
+
+    public int getSogliaUmiditaMax() {
+        return sogliaUmiditaMax;
+    } 
+    
 }
