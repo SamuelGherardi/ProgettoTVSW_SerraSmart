@@ -121,6 +121,21 @@
             <version>${archunit.version}</version>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Selenium Java bindings -->
+		<dependency>
+    		<groupId>org.seleniumhq.selenium</groupId>
+    		<artifactId>selenium-java</artifactId>	
+		</dependency>
+
+		<!-- JUnit Jupiter per Selenium -->
+		<dependency>
+    		<groupId>org.junit.jupiter</groupId>
+    		<artifactId>junit-jupiter-engine</artifactId>
+    		<scope>test</scope>
+		</dependency>
+
+        
     </dependencies>
 
     <build>

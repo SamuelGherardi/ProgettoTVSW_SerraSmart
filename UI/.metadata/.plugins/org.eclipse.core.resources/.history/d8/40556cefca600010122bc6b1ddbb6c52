@@ -1,0 +1,66 @@
+package gherardi.samuel;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.time.Duration;
+
+public class MainViewSeleniumTest {
+
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080"); // Assicurati che l'app sia in esecuzione
+    }
+
+    @Test
+    void cambiaModalitaTest() {
+        System.out.println("🚀 Test avviato");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // 🔐 Login
+        WebElement usernameField = driver.findElement(By.id("input-vaadin-text-field-6"));
+        WebElement passwordField = driver.findElement(By.id("input-vaadin-password-field-7"));
+        WebElement loginButton = driver.findElement(By.tagName("Log in"));
+
+        usernameField.sendKeys("admin"); // cambia se il nome utente è diverso
+        passwordField.sendKeys("123"); // cambia se la password è diversa
+        loginButton.click();
+
+        // ✅ Dopo il login, accedi al pulsante "Cambia modalità"
+        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(text(), 'Cambia modalità')]")));
+        button.click();
+
+        WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]")));
+        assertNotNull(label);
+
+        System.out.println("✅ Test completato con successo!");
+    }
+
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

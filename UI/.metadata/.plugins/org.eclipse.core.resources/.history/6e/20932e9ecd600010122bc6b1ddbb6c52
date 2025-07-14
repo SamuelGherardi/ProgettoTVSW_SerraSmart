@@ -1,0 +1,85 @@
+package gherardi.samuel;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.JavascriptExecutor;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.Duration;
+
+public class MainViewSeleniumTest {
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080");
+    }
+
+    @Test
+    void cambiaModalitaTest() {
+        System.out.println("🚀 Test avviato");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        // ❗ Aspetta che l'overlay sia presente e aperto
+        wait.until(driver -> js.executeScript(
+            "return document.querySelector('vaadin-login-overlay') !== null"));
+
+        js.executeScript("document.querySelector('vaadin-login-overlay').opened = true");
+
+        // ❗ Attendi che il campo utente sia pronto
+        wait.until(driver -> js.executeScript(
+            "let form = document.querySelector('vaadin-login-overlay').shadowRoot.querySelector('vaadin-login-form');" +
+            "return form !== null && form.shadowRoot !== null;"));
+
+        // ✅ Prendi gli elementi dal Shadow DOM
+        WebElement username = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-text-field').shadowRoot.querySelector('input')");
+
+        WebElement password = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-password-field').shadowRoot.querySelector('input')");
+
+        WebElement loginBtn = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-button')");
+
+        // ✏️ Inserisci credenziali e login
+        username.sendKeys("admin");
+        password.sendKeys("123");
+        loginBtn.click();
+
+        // ✅ Attendi che la home venga caricata
+        WebElement cambiaBtn = wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(text(),'Cambia modalità')]")));
+        cambiaBtn.click();
+
+        // ✅ Controlla il cambio di stato
+        WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]")));
+        assertNotNull(label);
+
+        System.out.println("✅ Test completato con successo!");
+    }
+
+
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

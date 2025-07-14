@@ -1,0 +1,57 @@
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.JavascriptExecutor;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class MainViewSeleniumTest {
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080");
+    }
+
+    @Test
+    void cambiaModalitaTest() throws InterruptedException {
+        System.out.println("🚀 Test avviato");
+
+        // Ottieni login overlay tramite JavaScript
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement loginOverlay = (WebElement) js.executeScript("return document.querySelector('vaadin-login-overlay').shadowRoot.querySelector('vaadin-login-form').shadowRoot");
+
+        // Trova input dentro shadow DOM
+        WebElement username = (WebElement) js.executeScript("return document.querySelector('vaadin-login-overlay').shadowRoot.querySelector('vaadin-login-form').shadowRoot.querySelector('vaadin-text-field').shadowRoot.querySelector('input')");
+        WebElement password = (WebElement) js.executeScript("return document.querySelector('vaadin-login-overlay').shadowRoot.querySelector('vaadin-login-form').shadowRoot.querySelector('vaadin-password-field').shadowRoot.querySelector('input')");
+        WebElement loginBtn = (WebElement) js.executeScript("return document.querySelector('vaadin-login-overlay').shadowRoot.querySelector('vaadin-login-form').shadowRoot.querySelector('vaadin-button')");
+
+        // Compila e invia
+        username.sendKeys("admin");
+        password.sendKeys("123");
+        loginBtn.click();
+
+        // Attendi 2s perché la pagina cambi
+        Thread.sleep(2000);
+
+        // Cerca il bottone "Cambia modalità"
+        WebElement cambia = driver.findElement(By.xpath("//button[contains(text(),'Cambia modalità')]"));
+        cambia.click();
+
+        // Verifica modalità attuale
+        WebElement label = driver.findElement(By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]"));
+        assertNotNull(label);
+        System.out.println("✅ Test completato con successo!");
+    }
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

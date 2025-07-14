@@ -1,0 +1,54 @@
+package gherardi.samuel;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.time.Duration;
+
+public class MainViewSeleniumTest {
+
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080"); // Assicurati che l'app sia in esecuzione
+    }
+
+    @Test
+    void cambiaModalitaTest() {
+    	System.out.println("🚀 Test avviato");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(text(), 'Cambia modalità')]")));
+
+        button.click();
+
+        WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]")));
+
+        assertNotNull(label);
+    }
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

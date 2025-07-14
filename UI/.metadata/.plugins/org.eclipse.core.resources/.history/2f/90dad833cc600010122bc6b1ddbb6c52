@@ -1,0 +1,78 @@
+package gherardi.samuel;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.JavascriptExecutor;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class MainViewSeleniumTest {
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080");
+    }
+
+    @Test
+    void cambiaModalitaTest() throws InterruptedException {
+        System.out.println("🚀 Test avviato");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        // Attendi il vaadin-login-overlay
+        wait.until(webDriver -> js.executeScript(
+            "return document.querySelector('vaadin-login-overlay') !== null"));
+
+        // Rendi visibile l'overlay (a volte serve)
+        js.executeScript("document.querySelector('vaadin-login-overlay').opened = true");
+
+        // Ora accedi agli input dentro lo shadow DOM
+        WebElement username = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-text-field').shadowRoot.querySelector('input')"
+        );
+
+        WebElement password = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-password-field').shadowRoot.querySelector('input')"
+        );
+
+        WebElement loginBtn = (WebElement) js.executeScript(
+            "return document.querySelector('vaadin-login-overlay')" +
+            ".shadowRoot.querySelector('vaadin-login-form')" +
+            ".shadowRoot.querySelector('vaadin-button')"
+        );
+
+        username.sendKeys("admin");
+        password.sendKeys("123");
+        loginBtn.click();
+
+        // Aspetta che il bottone "Cambia modalità" sia cliccabile
+        WebElement cambia = wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(text(),'Cambia modalità')]")));
+        cambia.click();
+
+        // Verifica se è cambiata la modalità
+        WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]")));
+        assertNotNull(label);
+
+        System.out.println("✅ Test completato con successo!");
+    }
+
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

@@ -1,0 +1,40 @@
+package gherardi.samuel;
+
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class MainViewSeleniumTest2 {
+    private WebDriver driver;
+
+    @BeforeEach
+    public void setup() {
+    	System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        // Avvia Chrome (assicurati di avere ChromeDriver nel PATH)
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080"); // Cambia se la porta è diversa
+    }
+
+    @Test
+    public void cambiaModalitaTest() {
+    	System.out.println("Test avviato");
+        WebElement button = driver.findElement(By.xpath("//button[contains(text(), 'Cambia modalità')]"));
+        button.click();
+
+        WebElement label = driver.findElement(By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]"));
+        assertNotNull(label);
+    }
+
+    @AfterEach
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

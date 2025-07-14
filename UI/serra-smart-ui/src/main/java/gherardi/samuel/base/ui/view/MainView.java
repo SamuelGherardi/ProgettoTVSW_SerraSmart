@@ -90,6 +90,7 @@ public final class MainView extends VerticalLayout {
         
         // 🟢 Pulsante: cambia modalità
         Button toggleModalita = new Button("Cambia modalità");
+        toggleModalita.setId("cambia-modalita");
         toggleModalita.addClickListener(e -> {
             if (centralina.getModalita() == Modalita.AUTOMATICA) {
                 centralina.setModalita(Modalita.MANUALE);

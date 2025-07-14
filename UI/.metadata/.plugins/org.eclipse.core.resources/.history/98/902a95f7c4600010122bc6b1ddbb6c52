@@ -1,0 +1,44 @@
+package gherardi.samuel;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+public class MainViewSeleniumTest {
+
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080"); // Assicurati che l'app sia in esecuzione
+    }
+
+    @Test
+    void cambiaModalitaTest() {
+        System.out.println("🚀 Test eseguito");
+        WebElement button = driver.findElement(By.xpath("//button[contains(text(), 'Cambia modalità')]"));
+        button.click();
+
+        WebElement label = driver.findElement(By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]"));
+        assertNotNull(label);
+        System.out.println("✅ Modalità cambiata correttamente");
+    }
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

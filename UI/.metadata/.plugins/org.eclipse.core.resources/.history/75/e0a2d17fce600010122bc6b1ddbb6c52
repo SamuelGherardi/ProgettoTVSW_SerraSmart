@@ -1,0 +1,62 @@
+package gherardi.samuel;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.JavascriptExecutor;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.Duration;
+
+public class MainViewSeleniumTest {
+    private WebDriver driver;
+
+    @BeforeEach
+    void setup() {
+        System.out.println("🔧 Setup Selenium");
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver-win64\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.get("http://localhost:8080");
+    }
+
+    @Test
+    void cambiaModalitaTest() {
+        System.out.println("🚀 Avvio test Selenium");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+        // 🟡 Aspetta che la pagina contenga un campo input (username)
+        WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.cssSelector("input[type='text']")));
+
+        WebElement passwordField = driver.findElement(By.cssSelector("input[type='password']"));
+        WebElement loginBtn = driver.findElement(By.tagName("vaadin-button"));
+
+        usernameField.sendKeys("admin");
+        passwordField.sendKeys("123");
+        loginBtn.click();
+
+        // ✅ Attendi la dashboard e clicca il pulsante "Cambia modalità"
+        WebElement toggleButton = wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(text(),'Cambia modalità')]")));
+        toggleButton.click();
+
+        WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'Modalità attuale: MANUALE')]")));
+        assertNotNull(label);
+
+        System.out.println("✅ Login e cambio modalità riusciti!");
+    }
+
+
+
+    @AfterEach
+    void teardown() {
+        System.out.println("🧹 Chiudo browser");
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
