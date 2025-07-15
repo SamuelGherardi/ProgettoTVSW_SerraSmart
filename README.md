@@ -12,7 +12,6 @@ Progetto universitario per il corso di Testing e Verifica del Software (Unibg).
 - `/Requisiti/` – Specifica funzionale (PDF)
 - `/Asmeta/` – Modello formale ASM
 - `/Java/` – Implementazione e simulazione in Java
-- `/Test/` – Test automatici
 - `/Documentazione/` – Report finale
 - `/.github/` – File .yaml per Continuous Integration
 
