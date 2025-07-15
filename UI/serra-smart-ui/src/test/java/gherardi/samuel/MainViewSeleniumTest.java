@@ -50,6 +50,46 @@ public class MainViewSeleniumTest {
         System.out.println("✅ Login e cambio modalità riusciti!");
     }
 
+    
+    @Test
+    void accensioneLuceManualeTest() {
+        System.out.println("🚀 Test: accensione luce manuale");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Login
+        WebElement username = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[type='text']")));
+        WebElement password = driver.findElement(By.cssSelector("input[type='password']"));
+        WebElement loginBtn = driver.findElement(By.tagName("vaadin-button"));
+
+        username.sendKeys("admin");
+        password.sendKeys("123");
+        loginBtn.click();
+
+        // Cambia modalità in MANUALE
+        WebElement cambiaModalita = wait.until(ExpectedConditions.elementToBeClickable(By.id("cambia-modalita")));
+        cambiaModalita.click();
+
+        // Imposta indice luce = 0
+        WebElement indiceLuce = wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.xpath("//label[contains(text(), 'Indice luce')]//following::input[1]")));
+        indiceLuce.clear();
+        indiceLuce.sendKeys("0");
+        indiceLuce.sendKeys(Keys.TAB); // trigger Vaadin
+
+        // Clicca "Accendi luce"
+        WebElement accendiBtn = wait.until(ExpectedConditions.elementToBeClickable(By.id("accendi-luce")));
+        accendiBtn.click();
+
+        // Verifica badge L0: ON
+        WebElement badge = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(text(),'L0: ON')]")));
+        assertNotNull(badge);
+
+        System.out.println("✅ Luce 0 accesa manualmente con successo");
+    }
+
+    
 
 
     @AfterEach

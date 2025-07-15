@@ -197,6 +197,7 @@ public final class MainView extends VerticalLayout {
         ventilatoreSelect.setItems(Ventilatore.values());
 
         // Azioni LUCI
+        accendiLuce.setId("accendi-luce");
         accendiLuce.addClickListener(e -> {
             if (luceIndex.getValue() != null) {
                 centralina.setLuce(luceIndex.getValue().intValue(), StatoLuce.ON);
